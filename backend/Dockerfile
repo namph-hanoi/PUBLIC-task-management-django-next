@@ -19,6 +19,11 @@ RUN apt-get update -y && \
     && rm -rf /var/lib/apt/lists/* \
     && pip install -r requirements.txt
 
+# resolve the issue on MacOS with psycopg2-binary
+RUN pip uninstall psycopg2-binary -y
+RUN apt update -y && apt install -y build-essential libpq-dev
+RUN pip install psycopg2
+
 COPY ./backend/entrypoint.sh .
 RUN chmod +x /code/entrypoint.sh
 

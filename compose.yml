@@ -19,7 +19,7 @@ services:
       - "3000:3000"
 
   backend:
-    container_name: backend
+    container_name: backendd
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -38,13 +38,12 @@ services:
       - database
 
   database:
-    container_name: database
+    container_name: db
     build:
       context: ./database
     volumes:
       - ./database/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ./database/postgresql.conf:/etc/postgresql/postgresql.conf
-      - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${DB_USERNAME:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
@@ -58,7 +57,7 @@ services:
       retries: 5
 
   redis:
-    container_name: redis
+    container_name: rediz
     image: redis:7
     ports:
         - "6380:6379" # Exposing Redis on different port for convenience
@@ -72,6 +71,4 @@ services:
     restart: always
 
 volumes:
-  pgdata:
   entrypoint.sh:
-  # node_modules:
