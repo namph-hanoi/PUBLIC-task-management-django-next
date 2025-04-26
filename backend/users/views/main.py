@@ -33,8 +33,8 @@ class UserRegisterationAPIView(RegisterView):
     """
     Register new users using email and password.
     """
-
     serializer_class = UserRegistrationSerializer
+    authentication_classes = []
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -49,7 +49,6 @@ class UserRegisterationAPIView(RegisterView):
         if email:
             response_data = {"detail": _("Verification e-mail sent.")}
 
-
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
 
@@ -57,7 +56,7 @@ class UserLoginAPIView(LoginView):
     """
     Authenticate existing users using email and password.
     """
-
+    authentication_classes = []
     serializer_class = UserLoginSerializer
 
 

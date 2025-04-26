@@ -4,14 +4,12 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProfileAPIView,
     UserAPIView,
-    LoginViewCustom,
+    UserLoginAPIView,
     UserRegisterationAPIView,
     CustomTokenRefreshView,
     TokenRefreshView,
 )
 # from rest_framework_simplejwt.views import TokenRefreshView
-
-
 
 app_name = "users"
 
@@ -19,7 +17,7 @@ router = DefaultRouter()
 
 urlpatterns = [
     path("register/", UserRegisterationAPIView.as_view(), name="user_register"),
-    path("login/", LoginViewCustom.as_view(), name="user_login"),
+    path("login/", UserLoginAPIView.as_view(), name="user_login"),
     path("refresh-token/", TokenRefreshView.as_view(), name="refresh_token"),
     path("custom-refresh/", CustomTokenRefreshView.as_view(), name="custom_refresh_token"),
     path("", UserAPIView.as_view(), name="user_detail"),

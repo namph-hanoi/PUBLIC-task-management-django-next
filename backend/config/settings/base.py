@@ -4,17 +4,12 @@ from decouple import Csv, config
 from datetime import timedelta
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
@@ -36,8 +31,6 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "allauth",
     "allauth.account",
-    "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
     "dj_rest_auth.registration",
     "corsheaders",
     "drf_spectacular",
@@ -120,8 +113,7 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        # "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -130,8 +122,8 @@ SITE_ID = 1
 
 REST_USE_JWT = True
 
-# JWT_AUTH_COOKIE = "auth"
-JWT_AUTH_REFRESH_COOKIE = "refresh-token"
+JWT_AUTH_COOKIE = "auth"
+JWT_AUTH_REFRESH_COOKIE = "ref-auth"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),

@@ -1,6 +1,4 @@
 from .main  import *
-from .refresh_token_view import TokenRefreshView
-from .login_view import LoginViewCustom
 
 __all__ = [
   "LoginViewCustom",
@@ -10,6 +8,4 @@ __all__ = [
   "GoogleLogin",
   "ProfileAPIView",
   "UserAPIView",
-  "CustomTokenRefreshView",
-  "TokenRefreshView",
 ] 

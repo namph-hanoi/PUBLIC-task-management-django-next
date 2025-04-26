@@ -19,7 +19,6 @@ class UserRegistrationSerializer(RegisterSerializer):
     """
     Serializer for registrating new users using email or phone number.
     """
-
     username = None
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
@@ -89,12 +88,6 @@ class UserLoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise AccountDisabledException()
 
-        if email:
-            email_address = user.emailaddress_set.filter(
-                email=user.email, verified=True
-            ).exists()
-            if not email_address:
-                raise serializers.ValidationError(_("E-mail is not verified."))
 
         validated_data["user"] = user
         return validated_data
@@ -108,8 +101,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
-            "avatar",
-            "bio",
+            "role"
             "created_at",
             "updated_at",
         )
