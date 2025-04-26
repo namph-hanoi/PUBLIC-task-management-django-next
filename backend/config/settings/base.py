@@ -36,19 +36,13 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "allauth",
     "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "dj_rest_auth.registration",
-    "phonenumber_field",
     "corsheaders",
     "drf_spectacular",
     # Local apps
     "users",
-    "products",
-    "orders",
-    "payment",
 ]
 
 MIDDLEWARE = [
@@ -100,25 +94,6 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -141,7 +116,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Authentication
 AUTHENTICATION_BACKENDS = [
     "users.backends.email_backend.EmailAuthBackend",
-    "users.backends.phone_backend.PhoneNumberAuthBackend",
 ]
 
 REST_FRAMEWORK = {
@@ -156,14 +130,12 @@ SITE_ID = 1
 
 REST_USE_JWT = True
 
-# JWT_AUTH_COOKIE = "phonenumber-auth"
-JWT_AUTH_REFRESH_COOKIE = "phonenumber-refresh-token"
+# JWT_AUTH_COOKIE = "auth"
+JWT_AUTH_REFRESH_COOKIE = "refresh-token"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
 # ACCOUNT_EMAIL_VERIFICATION SETTINGS
@@ -174,46 +146,16 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 
 
 # Email
-if DEBUG:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     
-EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = config("EMAIL_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_PASSWORD")
 
-# Phone number field
-PHONENUMBER_DEFAULT_REGION = "ET"
-
-# Token length for OTP
-TOKEN_LENGTH = 6
-
-# Token expiry
-TOKEN_EXPIRE_MINUTES = 3
-
-# Twilio
-TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = config("TWILIO_PHONE_NUMBER")
-
-# Stripe
-STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY")
-STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
-STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET")
 
 BACKEND_DOMAIN = config("BACKEND_DOMAIN")
 FRONTEND_DOMAIN = config("FRONTEND_DOMAIN")
-
-PAYMENT_SUCCESS_URL = config("PAYMENT_SUCCESS_URL")
-PAYMENT_CANCEL_URL = config("PAYMENT_CANCEL_URL")
-
-# Celery
-CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-CELERY_RESULT_BACKEND = config("REDIS_BACKEND")
-
 
 # DRF Spectacular
 SPECTACULAR_SETTINGS = {

@@ -3,19 +3,13 @@ import datetime
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils import timezone
-from django.utils.crypto import get_random_string
 from django.utils.translation import gettext as _
 from django_countries.fields import CountryField
-from phonenumber_field.modelfields import PhoneNumberField
-from rest_framework.exceptions import NotAcceptable
-from twilio.base.exceptions import TwilioRestException
-from twilio.rest import Client
 
 User = get_user_model()
 
 
-class Role(models.Model):
+class Profile(models.Model):
     EMPLOYER = "employer"
     EMPLOYEE = "employee"
     ROLE_CHOICES = [
@@ -23,7 +17,7 @@ class Role(models.Model):
         (EMPLOYEE, "Employee"),
     ]
 
-    user = models.OneToOneField(User, related_name="role")
+    user = models.OneToOneField(User, related_name="Profile", on_delete=models.CASCADE)
     role = models.CharField(
         max_length=50,
         choices=ROLE_CHOICES,

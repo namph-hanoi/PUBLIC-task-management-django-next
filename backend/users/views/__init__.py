@@ -7,11 +7,9 @@ __all__ = [
   "UserRegisterationAPIView",
   "UserLoginAPIView",
   "SendOrResendSMSAPIView",
-  "VerifyPhoneNumberAPIView",
   "GoogleLogin",
   "ProfileAPIView",
   "UserAPIView",
-  "AddressViewSet",
   "CustomTokenRefreshView",
   "TokenRefreshView",
 ] 
