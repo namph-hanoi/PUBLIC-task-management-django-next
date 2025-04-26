@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from users.models import Profile
-from users.permissions import IsUserAddressOwner, IsUserProfileOwner
+from users.permissions import IsUserProfileOwner
 from users.serializers import (
     CustomTokenRefreshSerializer,
     ProfileSerializer,
