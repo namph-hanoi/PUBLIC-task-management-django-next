@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { NEXT_PUBLIC_REFRESH_TOKEN_KEY } from "./constants/settings";
 
-const protectedRoutes = ["/dashboard", "/dashboard", "/logout"];
+// const protectedRoutes = ["/dashboard", "/dashboard", "/logout"];
+const protectedRoutes = ['random-todo'];
 
 export async function middleware(request: Request) {
   try {
