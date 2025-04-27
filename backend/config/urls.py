@@ -16,6 +16,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/user/", include("users.urls", namespace="users")),
+    path('api/task/', include("tasks.urls", namespace="tasks")),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(
         "resend-email/", ResendEmailVerificationView.as_view(), name="rest_resend_email"
