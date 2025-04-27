@@ -3,7 +3,7 @@ from unittest import TestCase
 
 
 @pytest.mark.integration
-class TestUserLoginAPI(TestCase):
+class TestTaskCrud(TestCase):
   @classmethod
   def setUpTestData(cls):
     pass
@@ -26,6 +26,9 @@ class TestUserLoginAPI(TestCase):
   
   @pytest.mark.django_db
   def test_update_task_success(self):
+    # factory employees A and B
+    # factory a task assigned to employee A
+    # request an update for the task changing to employee B
     pass
   
     
