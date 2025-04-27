@@ -5,19 +5,18 @@ from django.utils import timezone
 User = get_user_model()
 
 class Task(models.Model):
-    STATUS_PENDING = 'PENDING'
-    STATUS_IN_PROGRESS = 'IN_PROGRESS'
-    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_IN_PROGRESS = 1
+    STATUS_COMPLETED = 2
+    STATUS_PENDING = 3
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'Pending'),
         (STATUS_IN_PROGRESS, 'In Progress'),
         (STATUS_COMPLETED, 'Completed'),
+        (STATUS_PENDING, 'Pending'),
     ]
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(
-        max_length=20,
+    status = models.IntegerField(
         choices=STATUS_CHOICES,
         default=STATUS_IN_PROGRESS
     )
