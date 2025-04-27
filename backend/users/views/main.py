@@ -47,7 +47,7 @@ class UserRegisterationAPIView(RegisterView):
         email = request.data.get("email", None)
 
         if email:
-            response_data = {"detail": _("Verification e-mail sent.")}
+            response_data = {"detail": _("User regitstered.")}
 
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 

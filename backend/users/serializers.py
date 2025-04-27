@@ -101,7 +101,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
-            "role"
+            "role",
             "created_at",
             "updated_at",
         )

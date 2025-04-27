@@ -1,7 +1,6 @@
 import factory
 from django.contrib.auth import get_user_model
 from factory.django import DjangoModelFactory
-from products.models import Product, ProductCategory
 import random
 from allauth.account.models import EmailAddress
 
@@ -32,16 +31,3 @@ class EmailAddressFactory(DjangoModelFactory):
     verified = True
     primary = True
 
-
-class ProductCategoryFactory(DjangoModelFactory):
-    class Meta:
-        model = ProductCategory
-    name = factory.Sequence(lambda n: f"Category {n}")
-
-class ProductFactory(DjangoModelFactory):
-    class Meta:
-        model = Product
-    name = factory.Sequence(lambda n: f"Product {n}")
-    # Fix: Use SubFactory to properly associate with ProductCategory
-    category = factory.SubFactory(ProductCategoryFactory)
-    price = factory.LazyFunction(lambda: random.uniform(10.0, 100.0))
