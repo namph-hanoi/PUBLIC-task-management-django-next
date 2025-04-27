@@ -22,8 +22,8 @@ class UserRegistrationSerializer(RegisterSerializer):
     username = None
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
-    
     email = serializers.EmailField(required=False)
+    is_employer = serializers.BooleanField(required=True)
 
     def validate(self, validated_data):
         email = validated_data.get("email", None)
@@ -42,16 +42,21 @@ class UserRegistrationSerializer(RegisterSerializer):
         return {
             "first_name": self.validated_data.get("first_name", ""),
             "last_name": self.validated_data.get("last_name", ""),
+            "is_employer": self.validated_data.get("is_employer", False),
         }
 
     def create_extra(self, user, validated_data):
-        user.first_name = self.validated_data.get("first_name")
-        user.last_name = self.validated_data.get("last_name")
+        user.first_name = validated_data.get("first_name")
+        user.last_name = validated_data.get("last_name")
         user.save()
-
 
     def custom_signup(self, request, user):
         self.create_extra(user, self.get_cleaned_data_extra())
+        # Create the user profile with the appropriate role
+        Profile.objects.create(
+            user=user,
+            role=Profile.EMPLOYER if self.validated_data.get("is_employer") else Profile.EMPLOYEE
+        )
 
 
 class UserLoginSerializer(serializers.Serializer):
