@@ -21,6 +21,10 @@ class TestTaskCrud(TestCase):
     pass
   
   @pytest.mark.django_db
+  def test_task_create_fail_assignee_not_exist(self):
+    pass
+  
+  @pytest.mark.django_db
   def test_get_task_by_id(self):
     pass
   

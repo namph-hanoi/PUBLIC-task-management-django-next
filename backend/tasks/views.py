@@ -1,7 +1,10 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+
 from .models import Task
+from users.models import Profile
 from .serializers import TaskSerializer
 from .permissions import TaskRBACPermission
 
@@ -17,25 +20,55 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         role = getattr(getattr(user, 'profile', None), 'role', None)
         qs = super().get_queryset()
-        # Manual filtering by assignee and status
-        assignee = self.request.query_params.get('assignee')
-        status_param = self.request.query_params.get('status')
-        if role == 'EMPLOYEE':
-            qs = qs.filter(assignee=user)
-        if assignee:
-            qs = qs.filter(assignee=assignee)
+        query_parameters = self.request.query_params
+        assignee = query_parameters.get('assignee')
+        status_param = query_parameters.get('status')
+        query_filters = {}
+        
+        if role == Profile.EMPLOYEE:
+            query_filters['assignee'] = user
+        elif assignee:
+            query_filters['assignee'] = assignee
+            
         if status_param:
-            qs = qs.filter(status=status_param)
+            query_filters['status'] = status_param
+        if query_filters:
+            qs = qs.filter(**query_filters)
         return qs
 
     def perform_create(self, serializer):
         serializer.save()
-
+    
+    # TODO: move to the TaskItemViewSet
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
         role = getattr(getattr(user, 'profile', None), 'role', None)
         # Employees cannot change date_due
-        if role == 'EMPLOYEE' and 'date_due' in request.data:
-            return Response({'detail': 'Employees cannot change date_due.'}, status=status.HTTP_403_FORBIDDEN)
+        if role == Profile.EMPLOYEE and \
+        ('date_due' in request.data or \
+        'date_creation' in request.data):
+            return Response({'detail': 'Employees cannot change date.'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
+
+
+class TaskItemViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    # permission_classes = [IsTaskByBuyerOrAdmin]
+
+    # def get_serializer_class(self):
+    #     if self.action in ("create", "update", "partial_update", "destroy"):
+    #         return TaskWriteSerializer
+
+    #     return TaskReadSerializer
+
+    # def get_queryset(self):
+    #     res = super().get_queryset()
+    #     user = self.request.user
+    #     return res.filter(buyer=user)
+
+    # def get_permissions(self):
+    #     if self.action in ("update", "partial_update", "destroy"):
+    #         self.permission_classes += [IsTaskPending]
+
+    #     return super().get_permissions()
