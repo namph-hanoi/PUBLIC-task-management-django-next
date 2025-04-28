@@ -1,20 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
+  async rewrites() {
+    return [
       {
-        protocol: 'https',
-        hostname: 'utfs.io',
-        port: ''
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_REST_URL}/api/:path*/`,
       },
-      {
-        protocol: 'https',
-        hostname: 'api.slingacademy.com',
-        port: ''
-      }
-    ]
+    ];
   },
-  transpilePackages: ['geist']
 };
 
 module.exports = nextConfig;
