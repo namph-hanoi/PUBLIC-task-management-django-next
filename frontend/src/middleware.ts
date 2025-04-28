@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { NEXT_PUBLIC_REFRESH_TOKEN_KEY } from "./constants/settings";
 
 // const protectedRoutes = ["/dashboard", "/dashboard", "/logout"];
-const protectedRoutes = ['random-todo'];
+const protectedRoutes = ['/dashboard',];
 
 export async function middleware(request: Request) {
   try {
@@ -11,13 +11,12 @@ export async function middleware(request: Request) {
     const isProtectedRoute = protectedRoutes.some(route => url.pathname.startsWith(route));
   
     const cookies = request.headers.get('cookie') || '';
-    const hasRefreshToken = cookies.includes(`${NEXT_PUBLIC_REFRESH_TOKEN_KEY}=`);
   
-    if (isProtectedRoute && !hasRefreshToken) {
+    if (isProtectedRoute && !cookies.includes("auth")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   
-    if (!isProtectedRoute && hasRefreshToken) {
+    if (!isProtectedRoute && cookies.includes("auth")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next()

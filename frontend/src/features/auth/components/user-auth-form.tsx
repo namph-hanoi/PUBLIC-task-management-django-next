@@ -16,10 +16,12 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import GithubSignInButton from './github-auth-button';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Enter a valid email address' }),
-  password: z.string().min(8, { message: 'Password is required' })
+  password: z.string().min(3, { message: 'Password is required' })
 });
 
 export type UserFormValue = z.infer<typeof formSchema>;
@@ -28,6 +30,7 @@ export default function UserAuthForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
   const [loading, startTransition] = useTransition();
+  const router = useRouter(); // Add this line
   const defaultValues = {
     email: 'demo@gmail.com',
     password: '',
@@ -38,7 +41,17 @@ export default function UserAuthForm() {
   });
 
   const onSubmit = async (data: UserFormValue) => {
-    startTransition(async () => signIn(data));
+    startTransition(async () => {
+      const response = await signIn(data);
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        toast.error(responseData.detail || 'Sign in failed');
+        return;
+      }
+      toast.success(responseData.detail || 'Signed in successfully');
+      router.push('/dashboard');
+    });
   };
 
   return (

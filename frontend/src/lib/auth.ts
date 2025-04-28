@@ -1,10 +1,9 @@
 
 import { toast } from 'sonner';
-import { catchErrorTyped as getResponse } from '@/lib/catchErrorTyped';
 import { UserFormValue } from '@/features/auth/components/user-auth-form';
 
 export const signIn = async (data: UserFormValue) => {
-    const getAuthTokens = await fetch('/api/internal/auth/sign-in', {
+    const getAuthTokens = await fetch('/api/user/login/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -14,15 +13,8 @@ export const signIn = async (data: UserFormValue) => {
         password: data.password,
       }),
     })
-    const [_, response] = await getResponse(getAuthTokens.json())
-    if (response.error) {
-      toast.error(response.error.detail);
-    } else {
-      toast.success('Signed In Successfully!');
-      window.location.reload()
-    }
-    // TODO:
-    //   window.location.href = callbackUrl ?? '/dashboard';
+    
+    return getAuthTokens;
 }
 
 export const signOut = () => {
