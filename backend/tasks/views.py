@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
+from django.shortcuts import get_object_or_404
 
 from .models import Task
 from users.models import Profile
@@ -39,9 +39,13 @@ class TaskViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
     
-    # TODO: move to the TaskItemViewSet
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = get_object_or_404(queryset, pk=kwargs.get('pk'))
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
+
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
         user = request.user
         role = getattr(getattr(user, 'profile', None), 'role', None)
         # Employees cannot change date_due
@@ -51,24 +55,3 @@ class TaskViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Employees cannot change date.'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
-
-class TaskItemViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    # permission_classes = [IsTaskByBuyerOrAdmin]
-
-    # def get_serializer_class(self):
-    #     if self.action in ("create", "update", "partial_update", "destroy"):
-    #         return TaskWriteSerializer
-
-    #     return TaskReadSerializer
-
-    # def get_queryset(self):
-    #     res = super().get_queryset()
-    #     user = self.request.user
-    #     return res.filter(buyer=user)
-
-    # def get_permissions(self):
-    #     if self.action in ("update", "partial_update", "destroy"):
-    #         self.permission_classes += [IsTaskPending]
-
-    #     return super().get_permissions()

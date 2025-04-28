@@ -1,19 +1,16 @@
 import pytest
-from unittest import TestCase
 
-from tests.factories import TaskFactory, UserFactory
+from tests.factories import TaskFactory
 from tasks.models import Task
 from django.utils import timezone
 import datetime
 
-from tests.utils import api_list_tasks
+from tests.utils import api_create_task, api_get_task, api_list_tasks, api_update_task
 
 
 @pytest.mark.integration
 class TestTaskCrud:
-    @classmethod
-    def setUpTestData(cls):
-        pass
+
 
     @pytest.fixture
     def setup_for_get_task_list(self, employer_and_employees, employer_token):
@@ -77,39 +74,103 @@ class TestTaskCrud:
         }
 
     @pytest.mark.django_db
-    def test_task_create_success(self, *args, **kwargs):
-        pass
+    def test_task_create_success(self, setup_for_get_task_list, *args, **kwargs):
+        assert_data = {
+            "title": "Fantastic Task",
+            "description": "Fantastic Task",
+            "assignee": setup_for_get_task_list["employee_2"].id,
+        }
+        response_create = api_create_task(
+            setup_for_get_task_list["employer_token"],
+            assert_data,
+        )
+        task_id = response_create.data["id"]
+        task = Task.objects.get(id=task_id)
+        assert task.title == assert_data["title"]
+        assert task.description == assert_data["description"]
+        assert task.assignee_id == assert_data["assignee"]
 
     @pytest.mark.django_db
-    def test_task_create_fail_missing_title(self, *args, **kwargs):
-        pass
+    def test_task_create_fail_missing_title(
+        self, setup_for_get_task_list, *args, **kwargs
+    ):
+        assert_data = {
+            "description": "Fantastic Task",
+            "assignee": setup_for_get_task_list["employee_2"].id,
+        }
+        response = api_create_task(
+            setup_for_get_task_list["employer_token"],
+            assert_data,
+        )
+        assert response.status_code == 400
+        assert "title" in response.data
+        assert response.data["title"]
 
     @pytest.mark.django_db
-    def test_task_create_fail_missing_assignee(self, *args, **kwargs):
-        pass
+    def test_task_create_fail_missing_assignee(
+        self, setup_for_get_task_list, *args, **kwargs
+    ):
+        assert_data = {
+            "title": "Fantastic Task",
+        }
+        response = api_create_task(
+            setup_for_get_task_list["employer_token"],
+            assert_data,
+        )
+        assert response.status_code == 400
+        assert "assignee" in response.data
+        assert response.data["assignee"]
 
     @pytest.mark.django_db
-    def test_task_create_fail_assignee_not_exist(self, *args, **kwargs):
-        pass
+    def test_task_create_fail_assignee_not_exist(
+        self, setup_for_get_task_list, *args, **kwargs
+    ):
+        assert_data = {"title": "Fantastic Task", "assignee": 10}
+        response = api_create_task(
+            setup_for_get_task_list["employer_token"],
+            assert_data,
+        )
+        assert response.status_code == 400
+        assert "assignee" in response.data
+        assert (
+            "Invalid pk" in response.data["assignee"][0]
+            and "object does not exist" in response.data["assignee"][0]
+        )
 
     @pytest.mark.django_db
-    def test_get_task_by_id(self, *args, **kwargs):
-        pass
+    def test_get_task_by_id(
+        self, setup_for_get_task_list, *args, **kwargs
+    ):
+        assertion_id = setup_for_get_task_list["tasks_employee_2"][1].id
+        response = api_get_task(
+            setup_for_get_task_list["employer_token"],
+            assertion_id,
+        )
+        assert response.status_code == 200
+        assert response.data["id"] == assertion_id
+        assert response.data["assignee"] == setup_for_get_task_list["employee_2"].id
+        assert response.data["status"] == setup_for_get_task_list["tasks_employee_2"][1].status
 
     @pytest.mark.django_db
-    def test_update_task_success(self, *args, **kwargs):
-        # factory employees A and B
-        # factory a task assigned to employee A
-        # request an update for the task changing to employee B
-        pass
-
-    @pytest.mark.django_db
-    def test_update_task_fail_missing_title(self, *args, **kwargs):
-        pass
-
-    @pytest.mark.django_db
-    def test_update_task_fail_missing_assignee(self, *args, **kwargs):
-        pass
+    def test_update_task_success(
+        self, setup_for_get_task_list, *args, **kwargs
+    ):
+        assertion_task = setup_for_get_task_list["tasks_employee_2"][1]
+        response = api_update_task(
+            setup_for_get_task_list["employer_token"],
+            assertion_task.id,
+            data={
+                "title": "Updated Task",
+                "description": "Updated Task",
+                "assignee": setup_for_get_task_list["employee_1"].id,
+                "status": Task.STATUS_COMPLETED,
+            },
+        )
+        assert response.status_code == 200
+        assert response.data["id"] == assertion_task.id
+        assert response.data["assignee"] != setup_for_get_task_list["employee_2"].id
+        assert response.data["status"] != setup_for_get_task_list["tasks_employee_2"][1].status
+        assert response.data["description"] == "Updated Task"
 
     @pytest.mark.django_db
     def test_get_task_list_all(self, setup_for_get_task_list, *args, **kwargs):
@@ -180,11 +241,13 @@ class TestTaskCrud:
             {
                 "status": status,
                 "assignee": setup_for_get_task_list["employee_1"].id,
-            }
+            },
         )
         assert len(api_response.data) == 1
         assert api_response.data[0]["status"] == status
-        assert api_response.data[0]["assignee"] == setup_for_get_task_list["employee_1"].id
+        assert (
+            api_response.data[0]["assignee"] == setup_for_get_task_list["employee_1"].id
+        )
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_date_creation(
@@ -195,14 +258,20 @@ class TestTaskCrud:
             {
                 "ordering": "-date_creation",
                 "assignee": setup_for_get_task_list["employee_1"].id,
-            }
+            },
         )
         assert len(api_response.data) == len(
             setup_for_get_task_list["tasks_employee_1"]
         )
         # now in reverse order
-        assert setup_for_get_task_list["tasks_employee_1"][2].id == api_response.data[0]["id"]
-        assert setup_for_get_task_list["tasks_employee_1"][0].id == api_response.data[2]["id"]
+        assert (
+            setup_for_get_task_list["tasks_employee_1"][2].id
+            == api_response.data[0]["id"]
+        )
+        assert (
+            setup_for_get_task_list["tasks_employee_1"][0].id
+            == api_response.data[2]["id"]
+        )
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_date_due(
@@ -213,14 +282,20 @@ class TestTaskCrud:
             {
                 "ordering": "-date_due",
                 "assignee": setup_for_get_task_list["employee_1"].id,
-            }
+            },
         )
         assert len(api_response.data) == len(
             setup_for_get_task_list["tasks_employee_1"]
         )
         # in the correct order due to the `timezone.now() + ` in the Factories
-        assert setup_for_get_task_list["tasks_employee_1"][0].id == api_response.data[0]["id"]
-        assert setup_for_get_task_list["tasks_employee_1"][2].id == api_response.data[2]["id"]
+        assert (
+            setup_for_get_task_list["tasks_employee_1"][0].id
+            == api_response.data[0]["id"]
+        )
+        assert (
+            setup_for_get_task_list["tasks_employee_1"][2].id
+            == api_response.data[2]["id"]
+        )
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_status_ascendant(
@@ -230,7 +305,7 @@ class TestTaskCrud:
             setup_for_get_task_list["employer_token"],
             {
                 "ordering": "status",
-            }
+            },
         )
         assert api_response.data[0]["status"] == Task.STATUS_IN_PROGRESS
         assert api_response.data[1]["status"] == Task.STATUS_IN_PROGRESS
@@ -247,9 +322,9 @@ class TestTaskCrud:
             setup_for_get_task_list["employer_token"],
             {
                 "ordering": "-status",
-            }
+            },
         )
-        
+
         assert api_response.data[0]["status"] == Task.STATUS_PENDING
         assert api_response.data[1]["status"] == Task.STATUS_PENDING
         assert api_response.data[2]["status"] == Task.STATUS_COMPLETED

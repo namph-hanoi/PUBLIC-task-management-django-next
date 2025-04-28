@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Task
+from users.models import Profile
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,3 +19,22 @@ class TaskSerializer(serializers.ModelSerializer):
             if not data.get('assignee'):
                 raise serializers.ValidationError({'assignee': 'This field is required.'})
         return data
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        role = getattr(getattr(user, 'profile', None), 'role', None)
+
+        if role == Profile.EMPLOYEE:
+            if set(validated_data.keys()) - {'status'}:
+                raise serializers.ValidationError('Employees can only update the status field.')
+            instance.status = validated_data.get('status', instance.status)
+        elif role == Profile.EMPLOYER:
+            for field in validated_data:
+                if field in ['created_at', 'updated_at']:
+                    continue
+                setattr(instance, field, validated_data[field])
+        else:
+            raise serializers.ValidationError('Invalid user role.')
+        instance.save()
+        return instance
