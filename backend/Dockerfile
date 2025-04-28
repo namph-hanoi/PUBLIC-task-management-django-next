@@ -36,7 +36,7 @@ ENTRYPOINT ["/code/entrypoint.sh"]
 
 # Development target
 FROM base as development
-RUN pip install debugpy watchdog
+RUN pip install debugpy watchdog pytest pytest-django factory_boy
 ENV DJANGO_SETTINGS_MODULE=backend.settings.development
 ENV ENV='development'
 # CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
