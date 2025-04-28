@@ -27,11 +27,11 @@ class TaskViewSet(viewsets.ModelViewSet):
         
         if role == Profile.EMPLOYEE:
             query_filters['assignee'] = user
-        elif assignee:
-            query_filters['assignee'] = assignee
-            
-        if status_param:
-            query_filters['status'] = status_param
+        elif role == Profile.EMPLOYER:
+            if assignee:
+                query_filters['assignee'] = assignee
+            if status_param:
+                query_filters['status'] = status_param
         if query_filters:
             qs = qs.filter(**query_filters)
         return qs

@@ -1,4 +1,3 @@
-from devtools.debug import chill
 import pytest
 from unittest import TestCase
 
@@ -130,40 +129,130 @@ class TestTaskCrud:
     def test_get_task_list_filtered_by_assignee(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {"assignee": setup_for_get_task_list["employee_1"].id},
+        )
+        assert len(api_response.data) == len(
+            setup_for_get_task_list["tasks_employee_1"]
+        )
+        found_task = False
+        for task in setup_for_get_task_list["tasks_employee_1"]:
+            for response_task in api_response.data:
+                if task.id == response_task["id"]:
+                    found_task = True
+                    break
+            if found_task:
+                break
+        assert found_task, "None of the tasks from setup found in API response"
 
     @pytest.mark.django_db
     def test_get_task_list_filtered_by_status(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        status = Task.STATUS_CHOICES[0][0]
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"], {"status": status}
+        )
+        assert len(api_response.data) == 2
+        found_task = False
+        for task in setup_for_get_task_list["tasks_employee_1"]:
+            for response_task in api_response.data:
+                if task.id == response_task["id"]:
+                    found_task = True
+                    break
+            if found_task:
+                break
+        # Verify all returned tasks have the correct status
+        for response_task in api_response.data:
+            assert (
+                response_task["status"] == status
+            ), f"Task {response_task['id']} has wrong status: {response_task['status']}"
+        assert found_task, "None of the tasks from setup found in API response"
 
     @pytest.mark.django_db
     def test_get_task_list_filtered_by_assignee_with_status(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        status = Task.STATUS_CHOICES[1][0]
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {
+                "status": status,
+                "assignee": setup_for_get_task_list["employee_1"].id,
+            }
+        )
+        assert len(api_response.data) == 1
+        assert api_response.data[0]["status"] == status
+        assert api_response.data[0]["assignee"] == setup_for_get_task_list["employee_1"].id
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_date_creation(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {
+                "ordering": "-date_creation",
+                "assignee": setup_for_get_task_list["employee_1"].id,
+            }
+        )
+        assert len(api_response.data) == len(
+            setup_for_get_task_list["tasks_employee_1"]
+        )
+        # now in reverse order
+        assert setup_for_get_task_list["tasks_employee_1"][2].id == api_response.data[0]["id"]
+        assert setup_for_get_task_list["tasks_employee_1"][0].id == api_response.data[2]["id"]
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_date_due(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {
+                "ordering": "-date_due",
+                "assignee": setup_for_get_task_list["employee_1"].id,
+            }
+        )
+        assert len(api_response.data) == len(
+            setup_for_get_task_list["tasks_employee_1"]
+        )
+        # in the correct order due to the `timezone.now() + ` in the Factories
+        assert setup_for_get_task_list["tasks_employee_1"][0].id == api_response.data[0]["id"]
+        assert setup_for_get_task_list["tasks_employee_1"][2].id == api_response.data[2]["id"]
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_status_ascendant(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {
+                "ordering": "status",
+            }
+        )
+        assert api_response.data[0]["status"] == Task.STATUS_IN_PROGRESS
+        assert api_response.data[1]["status"] == Task.STATUS_IN_PROGRESS
+        assert api_response.data[2]["status"] == Task.STATUS_COMPLETED
+        assert api_response.data[3]["status"] == Task.STATUS_COMPLETED
+        assert api_response.data[4]["status"] == Task.STATUS_PENDING
+        assert api_response.data[5]["status"] == Task.STATUS_PENDING
 
     @pytest.mark.django_db
     def test_get_task_list_sorted_by_status_descendant(
         self, setup_for_get_task_list, *args, **kwargs
     ):
-        pass
+        api_response = api_list_tasks(
+            setup_for_get_task_list["employer_token"],
+            {
+                "ordering": "-status",
+            }
+        )
+        
+        assert api_response.data[0]["status"] == Task.STATUS_PENDING
+        assert api_response.data[1]["status"] == Task.STATUS_PENDING
+        assert api_response.data[2]["status"] == Task.STATUS_COMPLETED
+        assert api_response.data[3]["status"] == Task.STATUS_COMPLETED
+        assert api_response.data[4]["status"] == Task.STATUS_IN_PROGRESS
+        assert api_response.data[5]["status"] == Task.STATUS_IN_PROGRESS
