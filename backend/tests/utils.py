@@ -47,7 +47,7 @@ def api_get_task(token: str, task_id: int):
 def api_update_task(token: str, task_id: int, data: dict):
     client = APIClient()
     client.cookies['auth'] = token
-    return client.put(f'/api/task/{task_id}/', data, format='json')
+    return client.patch(f'/api/task/{task_id}/', data, format='json')
 
 def api_list_tasks(token: str, params: dict = None):
     client = APIClient()

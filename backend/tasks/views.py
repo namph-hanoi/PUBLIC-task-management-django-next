@@ -30,8 +30,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         elif role == Profile.EMPLOYER:
             if assignee:
                 query_filters['assignee'] = assignee
-            if status_param:
-                query_filters['status'] = status_param
+        if status_param:
+            query_filters['status'] = status_param
         if query_filters:
             qs = qs.filter(**query_filters)
         return qs
@@ -54,4 +54,3 @@ class TaskViewSet(viewsets.ModelViewSet):
         'date_creation' in request.data):
             return Response({'detail': 'Employees cannot change date.'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
-
