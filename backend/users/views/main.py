@@ -59,6 +59,20 @@ class UserLoginAPIView(LoginView):
     authentication_classes = []
     serializer_class = UserLoginSerializer
 
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        # If login is successful, add the user's role to the response
+        if response.status_code == status.HTTP_200_OK:
+            user = None
+            # Try to get user from serializer context or request
+            if hasattr(response, 'data') and 'user' in getattr(getattr(self, 'serializer', None), 'validated_data', {}):
+                user = self.serializer.validated_data['user']
+            else:
+                user = getattr(request, 'user', None)
+            if user and hasattr(user, 'profile'):
+                response.data['user_role'] = user.profile.role
+        return response
+
 
 class GoogleLogin(SocialLoginView):
     """

@@ -1,4 +1,5 @@
 from .main  import *
+from rest_framework_simplejwt.views import TokenRefreshView
 
 __all__ = [
   "LoginViewCustom",
@@ -8,4 +9,5 @@ __all__ = [
   "GoogleLogin",
   "ProfileAPIView",
   "UserAPIView",
+  "TokenRefreshView",
 ] 
