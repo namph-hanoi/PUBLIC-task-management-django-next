@@ -1,3 +1,4 @@
+import React from 'react';
 import PageContainer from '@/components/layout/page-container';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -9,7 +10,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
-import React from 'react';
+import OverviewClientLogger from './page.client';
 
 export default function OverViewLayout({
   sales,
@@ -18,6 +19,7 @@ export default function OverViewLayout({
 }) {
   return (
     <PageContainer>
+      <OverviewClientLogger />
       <div className='flex flex-1 flex-col space-y-2'>
         <div className='flex items-center justify-between space-y-2'>
           <h2 className='text-2xl font-bold tracking-tight'>
