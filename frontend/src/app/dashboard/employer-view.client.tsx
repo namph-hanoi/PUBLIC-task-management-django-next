@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 
 
-export default function EmployeeView() {
+export default function EmployerView() {
   const { user } = useGlobalStore();
 
   return (
@@ -14,17 +14,17 @@ export default function EmployeeView() {
       <div className='flex flex-1 flex-col space-y-4'>
         <div className='flex items-center justify-between'>
           <h2 className='text-2xl font-bold tracking-tight'>
-            Employee Dashboard
+            Employer Dashboard
           </h2>
         </div>
 
         <Card className='@container/card'>
           <CardHeader>
             <CardTitle className='text-xl'>
-              Welcome, {user?.first_name || 'Employee'}
+              Welcome, {user?.first_name || 'Employer'}
             </CardTitle>
             <p className='text-muted-foreground mt-2'>
-              This is your employee dashboard view
+              This is your employer dashboard view
             </p>
           </CardHeader>
         </Card>
