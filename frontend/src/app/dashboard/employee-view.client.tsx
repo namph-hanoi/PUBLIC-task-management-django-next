@@ -37,26 +37,20 @@ export default memo(function EmployeeView() {
     setModalOpen(true);
   };
 
+  const statusMap: Record<number, string> = {
+    1: 'In progress',
+    2: 'Completed',
+    3: 'Pending',
+  };
+
   return (
     <>
       <div className='flex flex-1 flex-col space-y-4'>
         <div className='flex items-center justify-between'>
           <h2 className='text-2xl font-bold tracking-tight'>
-            Employee Dashboard
+            Welcome, {user?.username || 'Employee'}
           </h2>
         </div>
-
-        <Card className='@container/card'>
-          <CardHeader>
-            <CardTitle className='text-xl'>
-              Welcome, {user?.first_name || 'Employee'}
-            </CardTitle>
-            <p className='text-muted-foreground mt-2'>
-              This is your employee dashboard view
-            </p>
-          </CardHeader>
-        </Card>
-
         <div className='overflow-x-auto'>
           <h3 className='text-lg font-semibold mb-2'>Your Tasks</h3>
           <div>
@@ -89,7 +83,7 @@ export default memo(function EmployeeView() {
                         {clampText(task.description || '-', 30)}
                       </TableCell>
                       <TableCell colSpan={3}>
-                        {task.status === 1 ? 'Open' : 'Other'}
+                        {statusMap[task.status] || 'Other'}
                       </TableCell>
                       <TableCell colSpan={3}>
                         {new Date(task.date_due).toLocaleDateString()}

@@ -7,25 +7,33 @@ interface DatePickerPopoverProps {
   label: string;
   value?: string;
   onChange: (date: Date) => void;
-  minDate?: Date; // Add this prop
+  minDate?: Date;
+  disabled?: boolean; // Add this line
 }
 
-export const DatePickerPopover: React.FC<DatePickerPopoverProps> = ({ label, value, onChange, minDate }) => {
+export const DatePickerPopover: React.FC<DatePickerPopoverProps> = ({
+  label,
+  value,
+  onChange,
+  minDate,
+  disabled = false, // Default to false
+}) => {
   const [open, setOpen] = React.useState(false);
   const dateObj = value ? new Date(value) : undefined;
   return (
     <label>
       <span className="block text-sm font-medium">{label}</span>
-      <div
+      <button
         className="border rounded px-2 py-1 w-full text-left bg-white"
         onClick={() => {
-          setOpen(prevState => !prevState);
+          if (!disabled) setOpen(prevState => !prevState);
         }}
+        disabled={disabled} // Disable the button
       >
         {dateObj ? format(dateObj, 'yyyy-MM-dd') : <span className="text-gray-400">Select date</span>}
-      </div>
+      </button>
       <Popover open={open} onOpenChange={setOpen}>
-        {open && (
+        {open && !disabled && ( // Prevent popover if disabled
           <div className="absolute z-50 mt-2 p-2 bg-white rounded shadow">
             <DayPicker
               mode="single"

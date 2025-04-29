@@ -2,14 +2,12 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Modal } from '@/components/ui/modal';
-import { Task, useStoreTasks } from '@/features/states/tasks';
-import { DayPicker } from 'react-day-picker';
+import { useStoreTasks } from '@/features/states/tasks';
 import 'react-day-picker/dist/style.css';
-import { Popover } from '@/components/ui/popover'; // Make sure you have a Popover component or use a library
-import { format } from 'date-fns';
 import { DatePickerPopover } from '@/components/ui/date-picker-popover';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useGlobalStore } from '@/features/states/global'
 
 // Zod schema for Task form validation
 const TaskSchema = z.object({
@@ -53,7 +51,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const { tasks, updateTask } = useStoreTasks();
   const task = tasks.find(t => t.id === taskId) || null;
 
-  // Set all task fields as defaultValues
+  // Get current user from global store
+  const user = useGlobalStore(state => state.user);
+  const isEmployee = user?.user_role === 'employee';
+
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TaskFormSchema>({
     resolver: zodResolver(TaskSchema),
     defaultValues: {
@@ -106,6 +107,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           <input
             className="border rounded px-2 py-1 w-full"
             {...register('title')}
+            disabled={isEmployee}
           />
           {errors.title && <span className="text-red-500 text-xs">{errors.title.message}</span>}
         </label>
@@ -114,17 +116,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           <textarea
             className="border rounded px-2 py-1 w-full"
             {...register('description')}
+            disabled={isEmployee}
           />
         </label>
         <label>
           <span className="block text-sm font-medium">Status</span>
           <select
             className="border rounded px-2 py-1 w-full"
-            {...register('status')}
+            {...register('status', { valueAsNumber: true })}
+            value={String(watch('status'))}
+            onChange={e => setValue('status', Number(e.target.value))}
+            onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
           >
-            <option value={1}>In Progress</option>
-            <option value={2}>Completed</option>
-            <option value={3}>Pending</option>
+            <option value="1">In Progress</option>
+            <option value="2">Completed</option>
+            <option value="3">Pending</option>
           </select>
         </label>
         <DatePickerPopover
@@ -137,6 +143,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
               date.toISOString().replace(/\.\d{3}Z$/, 'Z')
             )
           }}
+          disabled={isEmployee}
         />
         {errors.date_due && <span className="text-red-500 text-xs">{errors.date_due.message}</span>}
         <DatePickerPopover
@@ -148,10 +155,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
               date.toISOString().replace(/\.\d{3}Z$/, 'Z')
             )
           }
+          disabled={isEmployee}
         />
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded"
           type="submit"
+          onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
         >
           Save
         </button>
