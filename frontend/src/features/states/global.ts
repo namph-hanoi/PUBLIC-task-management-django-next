@@ -8,6 +8,7 @@ interface User {
   first_name: string
   last_name: string
   user_role: string
+  image?: string 
 }
 
 interface GlobalState {

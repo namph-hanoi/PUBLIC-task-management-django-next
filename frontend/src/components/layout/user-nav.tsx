@@ -1,32 +1,32 @@
 'use client';
-import { session } from '@/constants/mock-session';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useSignout } from '@/lib/auth'
+import { useGlobalStore } from '@/features/states/global'
 
 export function UserNav() {
   const signOut = useSignout();
-  if (session) {
+  const user = useGlobalStore((state) => state.user);
+
+  if (user) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
               <AvatarImage
-                src={session.user?.image ?? ''}
-                alt={session.user?.name ?? ''}
+                src={user.image ?? 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/da/da12d7dae90bd7337ebe513ab54083764aa09bd6_full.jpg'}
+                alt={user.first_name ?? ''}
               />
-              <AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
+              <AvatarFallback>{user.first_name}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -39,30 +39,13 @@ export function UserNav() {
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col space-y-1'>
               <p className='text-sm leading-none font-medium'>
-                {session.user?.name}
+                {user.first_name} {user.last_name}
               </p>
               <p className='text-muted-foreground text-xs leading-none'>
-                {session.user?.email}
+                {user.email}
               </p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              Profile
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Billing
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>New Team</DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={signOut}>
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
