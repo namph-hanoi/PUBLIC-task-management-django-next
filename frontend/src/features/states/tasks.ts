@@ -1,7 +1,7 @@
 import { persist } from 'zustand/middleware';
 import { create, StoreApi, UseBoundStore } from 'zustand';
 
-interface Task {
+export interface Task {
   id: number;
   title: string;
   description?: string;
