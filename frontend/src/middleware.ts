@@ -4,6 +4,10 @@ import { NEXT_PUBLIC_REFRESH_TOKEN_KEY } from "./constants/settings";
 // const protectedRoutes = ["/dashboard", "/dashboard", "/logout"];
 const protectedRoutes = ['/dashboard',];
 
+const hasAuth = (cookies: string) => {
+  return /(?<!ref-)auth/g.test(cookies);
+};
+
 export async function middleware(request: Request) {
   try {
     console.log(`Middleware accessed: ${request.url}`);
@@ -12,11 +16,11 @@ export async function middleware(request: Request) {
   
     const cookies = request.headers.get('cookie') || '';
   
-    if (isProtectedRoute && !cookies.includes("auth")) {
+    if (isProtectedRoute && !hasAuth(cookies)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   
-    if (!isProtectedRoute && cookies.includes("auth")) {
+    if (!isProtectedRoute && hasAuth(cookies)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next()

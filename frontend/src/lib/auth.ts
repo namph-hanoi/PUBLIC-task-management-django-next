@@ -1,6 +1,7 @@
-
 import { toast } from 'sonner';
 import { UserFormValue } from '@/features/auth/components/user-auth-form';
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 
 export const signIn = async (data: UserFormValue) => {
     const getAuthTokens = await fetch('/api/user/login/', {
@@ -16,23 +17,27 @@ export const signIn = async (data: UserFormValue) => {
     
     return getAuthTokens;
 }
+export const useSignout = () => {
+  const router = useRouter();
 
-export const signOut = () => {
-  return fetch('/api/internal/auth/sign-out', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then((response) => {
-    if (response.ok) {
-      toast.info('Signed out successfully');
-      window.location.reload()
-    } else {
-      toast.error('Logout failed');
+  return useCallback(async () => {
+    try {
+      const res = await fetch('/api/internal/sign-out', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        console.log('Signout successful:', data);
+        toast.success('Signout successful');
+        router.push('/');
+      } else {
+        throw new Error(`Signout failed. Detail: ${data}`);
+      }
+    } catch (error) {
+      toast.error(`Signout failed: ${error}`);
+      console.error('Signout failed:', error);
     }
-  }).catch((error) => {
-    console.log(["🚀 ~ signOut ~ error:", error]);
-    toast.error('Logout failed');
-  });
+  }, [router]);
 }
 
