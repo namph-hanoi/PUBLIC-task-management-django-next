@@ -7,48 +7,40 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { Popover } from '@/components/ui/popover'; // Make sure you have a Popover component or use a library
 import { format } from 'date-fns';
+import { DatePickerPopover } from '@/components/ui/date-picker-popover';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-// Reusable DatePickerPopover component
-interface DatePickerPopoverProps {
-  label: string;
-  value?: string;
-  onChange: (date: Date) => void;
-}
+// Zod schema for Task form validation
+const TaskSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  status: z.number(),
+  date_due: z.string(),
+  date_creation: z.string(),
+}).superRefine((data, ctx) => {
+  const due = new Date(data.date_due);
+  const creation = new Date(data.date_creation);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-const DatePickerPopover: React.FC<DatePickerPopoverProps> = ({ label, value, onChange }) => {
-  const [open, setOpen] = React.useState(false);
-  const dateObj = value ? new Date(value) : undefined;
-  console.log(open)
-  return (
-    <label>
-      <span className="block text-sm font-medium">{label}</span>
-        <div
-          className="border rounded px-2 py-1 w-full text-left bg-white"
-          onClick={() => {
-            setOpen(prevState => !prevState);
-          }}
-        >
-          {dateObj ? format(dateObj, 'yyyy-MM-dd') : <span className="text-gray-400">Select date</span>}
-        </div>
-      <Popover open={open} onOpenChange={setOpen}>
-        {open && (
-          <div className="absolute z-50 mt-2 p-2 bg-white rounded shadow">
-            <DayPicker
-              mode="single"
-              selected={dateObj}
-              onSelect={date => {
-                if (date) {
-                  onChange(date);
-                  setOpen(false);
-                }
-              }}
-            />
-          </div>
-        )}
-      </Popover>
-    </label>
-  );
-};
+  if (due < today) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['date_due'],
+      message: 'Due date cannot be before today',
+    });
+  }
+  if (due < creation) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['date_due'],
+      message: 'Due date cannot be before creation date',
+    });
+  }
+});
+
+type TaskFormSchema = z.infer<typeof TaskSchema>;
 
 interface TaskModalProps {
   taskId: number | null;
@@ -62,7 +54,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const task = tasks.find(t => t.id === taskId) || null;
 
   // Set all task fields as defaultValues
-  const { register, handleSubmit, reset, setValue, watch } = useForm<Task>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TaskFormSchema>({
+    resolver: zodResolver(TaskSchema),
     defaultValues: {
       title: task?.title || '',
       description: task?.description || '',
@@ -85,7 +78,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const date_due = watch('date_due');
   const date_creation = watch('date_creation');
 
-  const onSubmit = (data: Task) => {
+  const onSubmit = (data: TaskFormSchema) => {
     if (task) {
       updateTask(task.id, {
         title: data.title,
@@ -114,6 +107,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
             className="border rounded px-2 py-1 w-full"
             {...register('title')}
           />
+          {errors.title && <span className="text-red-500 text-xs">{errors.title.message}</span>}
         </label>
         <label>
           <span className="block text-sm font-medium">Description</span>
@@ -136,14 +130,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
         <DatePickerPopover
           label="Due Date"
           value={date_due}
+          minDate={date_creation ? new Date(date_creation) : undefined}
           onChange={date => {
             setValue(
               'date_due',
               date.toISOString().replace(/\.\d{3}Z$/, 'Z')
             )
-          }
-          }
+          }}
         />
+        {errors.date_due && <span className="text-red-500 text-xs">{errors.date_due.message}</span>}
         <DatePickerPopover
           label="Date Created"
           value={date_creation}
