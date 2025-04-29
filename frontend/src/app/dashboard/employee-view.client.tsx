@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { useGlobalStore } from '@/features/states/global';
 import { useStoreTasks } from '@/features/states/tasks';
 import {
@@ -14,13 +14,18 @@ import PageContainer from '@/components/layout/page-container';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { TaskModal } from './task-modal';
 
-export default function EmployeeView() {
+export default memo(function EmployeeView() {
   const { user } = useGlobalStore();
-  const { tasks } = useStoreTasks();
+  const { tasks, refreshTasks } = useStoreTasks();
 
   const [selectedTask, setSelectedTask] = useState<null | { id: number }>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Fetch tasks from API on mount
+  useEffect(() => {
+    refreshTasks();
+  }, []);
+  
   // Utility function to clamp text
   function clampText(text: string, maxLength: number) {
     if (!text) return '-';
@@ -107,4 +112,4 @@ export default function EmployeeView() {
       />
     </>
   );
-}
+})
