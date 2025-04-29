@@ -34,6 +34,11 @@ def get_user_auth_headers(email, password):
     token = client.cookies.get('auth')
     return token
 
+def api_client(token: str) -> APIClient:
+    client = APIClient()
+    client.cookies['auth'] = token
+    return client
+
 def api_create_task(token: str, data: dict):
     client = APIClient()
     client.cookies['auth'] = token

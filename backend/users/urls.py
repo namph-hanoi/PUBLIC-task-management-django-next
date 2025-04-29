@@ -8,6 +8,7 @@ from .views import (
     UserRegisterationAPIView,
     CustomTokenRefreshView,
     TokenRefreshView,
+    EmployeeSummaryView,
 )
 # from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path("", UserAPIView.as_view(), name="user_detail"),
     path("profile/", ProfileAPIView.as_view(), name="profile_detail"),
     path("profile/address/", include(router.urls)),
+    path("employee-summary/", EmployeeSummaryView.as_view(), name="employee-summary"),
 ]

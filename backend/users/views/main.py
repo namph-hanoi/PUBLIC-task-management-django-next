@@ -13,8 +13,13 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from users.models import Profile
+from tasks.models import Task
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
+
 from users.permissions import IsUserProfileOwner
 from users.serializers import (
     CustomTokenRefreshSerializer,
@@ -132,3 +137,28 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
             
         return response
+
+
+class EmployeeSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if not hasattr(user, 'profile') or user.profile.role != Profile.EMPLOYER:
+            return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+
+        User = get_user_model()
+        employees = User.objects.filter(profile__role=Profile.EMPLOYEE).annotate(
+            no_task_total=Count('tasks'),
+            no_task_completed=Count('tasks', filter=Q(tasks__status=Task.STATUS_COMPLETED))
+        )
+        data = [
+            {
+                'employee_email': employee.email,
+                'no_task_total': employee.no_task_total,
+                'no_task_completed': employee.no_task_completed,
+            }
+            for employee in employees
+        ]
+        return Response(data)

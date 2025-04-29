@@ -5,7 +5,13 @@ from tasks.models import Task
 from django.utils import timezone
 import datetime
 
-from tests.utils import api_create_task, api_get_task, api_list_tasks, api_update_task
+from tests.utils import (
+    api_create_task,
+    api_get_task,
+    api_list_tasks,
+    api_update_task,
+    api_client,
+)
 
 
 @pytest.mark.integration
@@ -152,26 +158,34 @@ class TestTaskRBAC:
 
     # EMPLOYER
     @pytest.mark.django_db
-    def test_employer_get_list_all_employees_tasks(self, employer_and_employees, employer_token):
-        # factory tasks for employee A and B
+    def test_employer_get_list_all_employees_tasks_summary(
+        self, employer_and_employees, employer_token
+    ):
         employee_1 = employer_and_employees["employee_1"]
         employee_2 = employer_and_employees["employee_2"]
-        
-        task_employee_1 = TaskFactory(
-            assignee=employee_1,
-            status=Task.STATUS_PENDING
-        )
-        task_employee_2 = TaskFactory(
-            assignee=employee_2,
-            status=Task.STATUS_IN_PROGRESS
-        )
-        
-        # assert get all tasks
-        response = api_list_tasks(employer_token.value)
+
+        TaskFactory(assignee=employee_1, status=Task.STATUS_PENDING)
+        TaskFactory(assignee=employee_1, status=Task.STATUS_PENDING)
+        TaskFactory(assignee=employee_1, status=Task.STATUS_COMPLETED)
+
+        TaskFactory(assignee=employee_2, status=Task.STATUS_PENDING)
+        TaskFactory(assignee=employee_2, status=Task.STATUS_COMPLETED)
+        TaskFactory(assignee=employee_2, status=Task.STATUS_COMPLETED)
+
+        response = api_client(employer_token.value).get("/api/user/employee-summary/")
         assert response.status_code == 200
-        assert len(response.data) == 2
-        
-        # Verify tasks for both employees are present
-        task_ids = [task["id"] for task in response.data]
-        assert task_employee_1.id in task_ids
-        assert task_employee_2.id in task_ids
+        data = response.data
+
+        # Find employee_1 and employee_2 summary
+        summary_1 = next(
+            (item for item in data if item["employee_email"] == employee_1.email), None
+        )
+        summary_2 = next(
+            (item for item in data if item["employee_email"] == employee_2.email), None
+        )
+        assert summary_1 is not None
+        assert summary_2 is not None
+        assert summary_1["no_task_total"] == 3
+        assert summary_1["no_task_completed"] == 1
+        assert summary_2["no_task_total"] == 3
+        assert summary_2["no_task_completed"] == 2
