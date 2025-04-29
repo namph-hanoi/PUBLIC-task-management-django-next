@@ -12,11 +12,7 @@ import {
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 import OverviewClientLogger from './page.client';
 
-export default function OverViewLayout({
-  sales,
-}: {
-  sales: React.ReactNode;
-}) {
+export default function OverViewLayout() {
   return (
     <PageContainer>
       <OverviewClientLogger />
@@ -100,7 +96,7 @@ export default function OverViewLayout({
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
           <div className='col-span-4 md:col-span-3'>
             {/* sales arallel routes */}
-            {sales}
+            {/* {sales} */}
           </div>
         </div>
       </div>

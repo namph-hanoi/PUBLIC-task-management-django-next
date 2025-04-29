@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { create, StoreApi, UseBoundStore } from 'zustand';
 
 interface Task {
   id: number;
@@ -97,8 +97,9 @@ const storeTasksImpl = (set: any, get: any): StoreTasks => ({
   }
 });
 
-// Zustand store with persist and redux devtools in development
-export const useStoreTasks =
+type UseStoreTasksType = UseBoundStore<StoreApi<StoreTasks>>;
+
+export const useStoreTasks: UseStoreTasksType =
   process.env.NODE_ENV === 'development'
     ? create(
         persist(
