@@ -18,6 +18,7 @@ import * as z from 'zod';
 import GithubSignInButton from './github-auth-button';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useGlobalStore } from '@/features/states/global'; // Add this import
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Enter a valid email address' }),
@@ -30,9 +31,10 @@ export default function UserAuthForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
   const [loading, startTransition] = useTransition();
-  const router = useRouter(); // Add this line
+  const router = useRouter();
+  const setUser = useGlobalStore((state) => state.setUser);
   const defaultValues = {
-    email: 'demo@gmail.com',
+    email: 'employee_a@localhost.com',
     password: '',
   };
   const form = useForm<UserFormValue>({
@@ -44,11 +46,17 @@ export default function UserAuthForm() {
     startTransition(async () => {
       const response = await signIn(data);
       const responseData = await response.json();
-
       if (!response.ok) {
         toast.error(responseData.detail || 'Sign in failed');
         return;
       }
+      setUser({
+        username: responseData.user.username,
+        email: responseData.user.email,
+        first_name: responseData.user.first_name,
+        last_name: responseData.user.last_name,
+        user_role: responseData.user_role,
+      });
       toast.success(responseData.detail || 'Signed in successfully');
       router.push('/dashboard');
     });
