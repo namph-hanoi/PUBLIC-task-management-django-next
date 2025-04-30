@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+
+const restUrl = process.env.NEXT_PUBLIC_REST_URL || "http://backend:8000";
 const nextConfig = {
   async rewrites() {
     return [
@@ -8,7 +10,7 @@ const nextConfig = {
       },
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_REST_URL}/api/:path*/`,
+        destination: `${restUrl}/api/:path*/`,
       },
     ];
   },
