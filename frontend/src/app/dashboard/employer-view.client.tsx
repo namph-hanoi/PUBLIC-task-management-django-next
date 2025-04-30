@@ -33,7 +33,7 @@ export default function EmployerView() {
           </h2>
         </div>
         <div className='overflow-x-auto'>
-          <h3 className='text-lg font-semibold mb-2'>Employees</h3>
+          <h3 className='text-lg font-semibold mb-2'>Here is the summary of your employees:</h3>
           <div>
             <Table>
               <TableHeader>
