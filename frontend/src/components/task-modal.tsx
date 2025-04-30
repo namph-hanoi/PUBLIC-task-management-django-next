@@ -8,6 +8,7 @@ import { DatePickerPopover } from '@/components/ui/date-picker-popover';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useGlobalStore } from '@/features/states/global'
+import { useStoreEmployees } from '@/features/states/employees';
 
 const TaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -15,6 +16,7 @@ const TaskSchema = z.object({
   status: z.number(),
   date_due: z.string(),
   date_creation: z.string(),
+  assignee: z.union([z.string(), z.number()]).optional(),
 });
 
 type TaskFormSchema = z.infer<typeof TaskSchema>;
@@ -41,6 +43,7 @@ function validateDirtyFields(schema: typeof TaskSchema, data: any, dirtyFields: 
 
 export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose }) => {
   const { tasks, updateTask } = useStoreTasks();
+  const { employees } = useStoreEmployees(); // Get employees from store
   const task = tasks.find(t => t.id === taskId) || null;
 
   // Get current user from global store
@@ -55,9 +58,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
       status: task?.status ?? 1,
       date_due: task?.date_due,
       date_creation: task?.date_creation,
+      assignee: task?.assignee ?? '', // Set default assignee if available
     },
   });
-
+  if (task) debugger
   useEffect(() => {
     reset({
       title: task?.title || '',
@@ -65,6 +69,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
       status: task?.status ?? 1,
       date_due: task?.date_due,
       date_creation: task?.date_creation,
+      assignee: task?.assignee ?? '',
     });
   }, [task, isOpen, reset]);
 
@@ -180,13 +185,34 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           }
           disabled={isEmployee}
         />
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          type="submit"
-          onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
-        >
-          Save
-        </button>
+          {!isEmployee && (
+            <label>
+              <span className="block text-sm font-medium">Assignee</span>
+              <select
+                className="border rounded px-2 py-1 w-full"
+                {...register('assignee')}
+                disabled={isEmployee}
+                value={watch('assignee') ?? ''}
+                onChange={e => {
+                  setValue('assignee', e.target.value, { shouldDirty: true, shouldValidate: true });
+                }}
+              >
+                {/* <option value="">Unassigned</option> */}
+                {employees.map((emp: any) => (
+                  <option key={emp.employee_id ?? emp.id} value={emp.employee_id ?? emp.id}>
+                    {emp.employee_email}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+              type="submit"
+              onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
+            >
+            Save
+          </button>
       </form>
     </Modal>
   );

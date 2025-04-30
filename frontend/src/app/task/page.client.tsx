@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useStoreTasks } from '@/features/states/tasks';
+import { useStoreEmployees } from '@/features/states/employees';
 import {
   Table,
   TableHeader,
@@ -14,12 +15,14 @@ import { TaskModal } from '../../components/task-modal';
 
 const TaskPageClient = () => {
   const { tasks, refreshTasks } = useStoreTasks();
+  const { fetchEmployees } = useStoreEmployees();
 
   const [selectedTask, setSelectedTask] = useState<null | { id: number }>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     refreshTasks();
+    fetchEmployees();
   }, []);
 
   function clampText(text: string, maxLength: number) {
