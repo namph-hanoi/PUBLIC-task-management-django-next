@@ -16,26 +16,6 @@ const TaskSchema = z.object({
   status: z.number(),
   date_due: z.string(),
   date_creation: z.string(),
-}).superRefine((data, ctx) => {
-  const due = new Date(data.date_due);
-  const creation = new Date(data.date_creation);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (due < today) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['date_due'],
-      message: 'Due date cannot be before today',
-    });
-  }
-  if (due < creation) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['date_due'],
-      message: 'Due date cannot be before creation date',
-    });
-  }
 });
 
 type TaskFormSchema = z.infer<typeof TaskSchema>;
@@ -44,6 +24,19 @@ interface TaskModalProps {
   taskId: number | null;
   isOpen: boolean;
   onClose: () => void;
+}
+
+// TODO: Move this function to a utils file
+function validateDirtyFields(schema: typeof TaskSchema, data: any, dirtyFields: any) {
+  const dirtyKeys = Object.keys(dirtyFields);
+  const dirtyData = dirtyKeys.reduce((acc, key) => {
+    acc[key] = data[key];
+    return acc;
+  }, {} as any);
+  const partialSchema = schema.pick(
+    dirtyKeys.reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  );
+  return partialSchema.safeParse(dirtyData);
 }
 
 
@@ -55,7 +48,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const user = useGlobalStore(state => state.user);
   const isEmployee = user?.user_role === 'employee';
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TaskFormSchema>({
+  const { register, handleSubmit, reset, setValue, watch, setError, formState: { errors, dirtyFields } } = useForm<TaskFormSchema>({
     resolver: zodResolver(TaskSchema),
     defaultValues: {
       title: task?.title || '',
@@ -80,6 +73,34 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const date_creation = watch('date_creation');
 
   const onSubmit = (data: TaskFormSchema) => {
+    const result = validateDirtyFields(TaskSchema, data, dirtyFields);
+    if (!result.success) {
+      return;
+    }
+
+    const errors: Record<string, string> = {};
+    const due = new Date(data.date_due);
+    due.setHours(0, 0, 0, 0);
+    const creation = new Date(data.date_creation);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (dirtyFields.date_due || dirtyFields.date_creation) {
+      if (due < today) {
+        errors.date_due = 'Due date cannot be before today';
+      }
+      if (due < creation) {
+        errors.date_due = 'Due date cannot be before creation date';
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      if (errors.date_due) {
+        setError('date_due', { type: 'manual', message: errors.date_due });
+      }
+      return;
+    }
+
     if (task) {
       updateTask(task.id, {
         title: data.title,
