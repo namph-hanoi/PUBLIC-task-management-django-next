@@ -161,7 +161,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           onChange={date => {
             setValue(
               'date_due',
-              date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+              date.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+              { shouldDirty: true, shouldValidate: true }
             )
           }}
           disabled={isEmployee}
@@ -173,7 +174,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           onChange={date =>
             setValue(
               'date_creation',
-              date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+              date.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+              { shouldDirty: true, shouldValidate: true }
             )
           }
           disabled={isEmployee}
