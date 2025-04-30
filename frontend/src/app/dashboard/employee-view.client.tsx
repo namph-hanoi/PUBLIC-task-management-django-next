@@ -10,9 +10,7 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import PageContainer from '@/components/layout/page-container';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { TaskModal } from './task-modal';
+import { TaskModal } from '../../components/task-modal';
 
 export default memo(function EmployeeView() {
   const { user } = useGlobalStore();

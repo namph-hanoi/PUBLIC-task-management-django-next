@@ -2,14 +2,13 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Modal } from '@/components/ui/modal';
-import { useStoreTasks } from '@/features/states/tasks';
+import { Task, useStoreTasks } from '@/features/states/tasks';
 import 'react-day-picker/dist/style.css';
 import { DatePickerPopover } from '@/components/ui/date-picker-popover';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useGlobalStore } from '@/features/states/global'
 
-// Zod schema for Task form validation
 const TaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
@@ -73,8 +72,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
   const date_creation = watch('date_creation');
 
   const onSubmit = (data: TaskFormSchema) => {
-    const result = validateDirtyFields(TaskSchema, data, dirtyFields);
-    if (!result.success) {
+    const updatedFields = validateDirtyFields(TaskSchema, data, dirtyFields);
+    if (!updatedFields.success) {
       return;
     }
 
@@ -103,11 +102,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
 
     if (task) {
       updateTask(task.id, {
-        title: data.title,
-        description: data.description,
-        status: data.status,
-        date_due: data.date_due,
-        date_creation: data.date_creation,
+        ...updatedFields.data
       });
       onClose();
     }
