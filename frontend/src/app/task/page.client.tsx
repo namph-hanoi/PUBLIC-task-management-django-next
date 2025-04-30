@@ -16,6 +16,8 @@ import { TaskCreationModal } from '../../components/task-creation-modal';
 import { useGlobalStore } from '@/features/states/global';
 import { useRouter } from 'next/navigation';
 
+export type NumberOrAll = number | 'all';
+
 const TaskPageClient = () => {
   const user = useGlobalStore(state => state.user);
   const { tasks, refreshTasks } = useStoreTasks();
@@ -26,15 +28,29 @@ const TaskPageClient = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [creationModalOpen, setCreationModalOpen] = useState(false);
 
+  // New state for filters
+  const [selectedAssignee, setSelectedAssignee] = useState<number | 'all'>('all');
+  const [selectedStatus, setSelectedStatus] = useState<number | 'all'>('all');
+
+  // Modified useEffect to use filters
   useEffect(() => {
-      const isEmployee = user?.user_role === 'employee';
-      if (isEmployee) {
-        router.push('/dashboard');
-      } else {
-        refreshTasks();
-        fetchEmployees();
-      }
+    const isEmployee = user?.user_role === 'employee';
+    if (isEmployee) {
+      router.push('/dashboard');
+    } else {
+      getTasks(selectedAssignee, selectedStatus);
+      fetchEmployees();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // getTasks function
+  const getTasks = (assignee: number | 'all', status: number | 'all') => {
+    const params: { assignee?: NumberOrAll | null; status?: NumberOrAll | null } = {};
+    if (assignee && assignee !== 'all') params.assignee = assignee;
+    if (status && status !== 'all') params.status = Number(status);
+    refreshTasks(params);
+  };
 
   function clampText(text: string, maxLength: number) {
     if (!text) return '-';
@@ -58,13 +74,45 @@ const TaskPageClient = () => {
         <h2 className='text-2xl font-bold tracking-tight'>Task Management</h2>
         <p>Welcome to the Task Management page. Here you can manage your tasks effectively.</p>
         {/* Add button to open task creation modal */}
-        <div className="mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded"
             onClick={() => setCreationModalOpen(true)}
           >
             + Create Task
           </button>
+          <div className="flex gap-2">
+            {/* Employee Select */}
+            <select
+              className="border rounded px-2 py-1"
+              value={selectedAssignee}
+              onChange={e => {
+                setSelectedAssignee(e.target.value);
+                getTasks(e.target.value, selectedStatus);
+              }}
+            >
+              <option value="all">All Employees</option>
+              {useStoreEmployees.getState().employees.map(emp => (
+                <option key={emp.employee_id} value={emp.employee_id}>
+                  {emp.employee_email}
+                </option>
+              ))}
+            </select>
+            {/* Status Select */}
+            <select
+              className="border rounded px-2 py-1"
+              value={selectedStatus}
+              onChange={e => {
+                setSelectedStatus(e.target.value);
+                getTasks(selectedAssignee, e.target.value);
+              }}
+            >
+              <option value="all">All Statuses</option>
+              {Object.entries(statusMap).map(([key, value]) => (
+                <option key={key} value={key}>{value}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className='overflow-x-auto w-full'>
           <h3 className='text-lg font-semibold mb-2'>All Tasks</h3>

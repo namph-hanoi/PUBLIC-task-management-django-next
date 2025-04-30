@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import { persist } from 'zustand/middleware';
 import { create, StoreApi, UseBoundStore } from 'zustand';
 import { useGlobalStore } from './global';
+import { NumberOrAll } from '@/app/task/page.client';
 
 export interface Task {
   id: number;
@@ -23,7 +24,7 @@ type StoreTasks = {
   createTask: (task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'date_creation'>) => void;
   updateTask: (id: number, updates: Partial<Task>) => void;
   deleteTask: (id: number) => void;
-  refreshTasks: () => Promise<void>; // <-- Change signature to no args, returns Promise<void>
+  refreshTasks: (params?: { assignee?: NumberOrAll | null; status?: NumberOrAll | null }) => Promise<void>;
 };
 
 const storeTasksImpl = (set: any, get: any): StoreTasks => ({
@@ -80,13 +81,21 @@ const storeTasksImpl = (set: any, get: any): StoreTasks => ({
     }
   },
   deleteTask: (id) => {
-    set((state: StoreTasks) => ({
-      tasks: state.tasks.filter((task) => task.id !== id)
-    }));
+    // set((state: StoreTasks) => ({
+    //   tasks: state.tasks.filter((task) => task.id !== id)
+    // }));
   },
-  refreshTasks: async () => {
+  refreshTasks: async (params: {
+    assignee?: NumberOrAll | null;
+    status?: NumberOrAll | null;
+  } = {}) => {
+    const optionAll = 'all' as NumberOrAll;
     try {
-      const res = await fetch('/api/task/');
+      const query = [];
+      if (params.assignee && params.assignee !== optionAll) query.push(`assignee=${params.assignee}`);
+      if (params.status && params.status !== optionAll) query.push(`status=${params.status}`);
+      const queryString = query.length ? `?${query.join('&')}` : '';
+      const res = await fetch(`/api/task/${queryString}`);
       if (!res.ok) throw new Error('Failed to fetch tasks');
       const data = await res.json();
       set(() => ({ tasks: data }));

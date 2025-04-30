@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 import { create, StoreApi, UseBoundStore } from 'zustand';
 
 export interface Employee {
+  employee_id: number;
   employee_email: string;
   no_task_total: number;
   no_task_completed: number;
