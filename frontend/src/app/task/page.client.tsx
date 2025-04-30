@@ -12,18 +12,27 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { TaskModal } from '../../components/task-modal';
+import { useGlobalStore } from '@/features/states/global';
+import { useRouter } from 'next/navigation';
 
 const TaskPageClient = () => {
+  const user = useGlobalStore(state => state.user);
   const { tasks, refreshTasks } = useStoreTasks();
   const { fetchEmployees } = useStoreEmployees();
+  const router = useRouter();
 
   const [selectedTask, setSelectedTask] = useState<null | { id: number }>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    refreshTasks();
-    fetchEmployees();
-  }, []);
+      const isEmployee = user?.user_role === 'employee';
+      if (isEmployee) {
+        router.push('/dashboard');
+      } else {
+        refreshTasks();
+        fetchEmployees();
+      }
+  }, [user]);
 
   function clampText(text: string, maxLength: number) {
     if (!text) return '-';

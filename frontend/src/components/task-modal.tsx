@@ -61,7 +61,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
       assignee: task?.assignee ?? '', // Set default assignee if available
     },
   });
-  if (task) debugger
   useEffect(() => {
     reset({
       title: task?.title || '',
