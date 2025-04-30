@@ -24,7 +24,7 @@ type StoreTasks = {
   createTask: (task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'date_creation'>) => void;
   updateTask: (id: number, updates: Partial<Task>) => void;
   deleteTask: (id: number) => void;
-  refreshTasks: (params?: { assignee?: NumberOrAll | null; status?: NumberOrAll | null }) => Promise<void>;
+  refreshTasks: (params?: { assignee?: NumberOrAll | null; status?: NumberOrAll | null; ordering?: string }) => Promise<void>;
 };
 
 const storeTasksImpl = (set: any, get: any): StoreTasks => ({
@@ -88,12 +88,14 @@ const storeTasksImpl = (set: any, get: any): StoreTasks => ({
   refreshTasks: async (params: {
     assignee?: NumberOrAll | null;
     status?: NumberOrAll | null;
+    ordering?: string;
   } = {}) => {
     const optionAll = 'all' as NumberOrAll;
     try {
       const query = [];
       if (params.assignee && params.assignee !== optionAll) query.push(`assignee=${params.assignee}`);
       if (params.status && params.status !== optionAll) query.push(`status=${params.status}`);
+      if (params.ordering) query.push(`ordering=${params.ordering}`);
       const queryString = query.length ? `?${query.join('&')}` : '';
       const res = await fetch(`/api/task/${queryString}`);
       if (!res.ok) throw new Error('Failed to fetch tasks');

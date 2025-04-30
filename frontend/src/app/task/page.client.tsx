@@ -36,10 +36,15 @@ const TaskPageClient = () => {
   const [activeSortField, setActiveSortField] = useState<string | null>(null);
   const [isAscendant, setIsAscendant] = useState<boolean>(false);
 
-  const getTasks = (assignee: number | 'all', status: number | 'all') => {
-    const params: { assignee?: NumberOrAll | null; status?: NumberOrAll | null } = {};
+  const getTasks = (
+    assignee: number | 'all',
+    status: number | 'all',
+    ordering?: string
+  ) => {
+    const params: { assignee?: NumberOrAll | null; status?: NumberOrAll | null; ordering?: string } = {};
     if (assignee && assignee !== 'all') params.assignee = assignee;
     if (status && status !== 'all') params.status = Number(status);
+    if (ordering) params.ordering = ordering;
     refreshTasks(params);
   };
 
@@ -74,11 +79,27 @@ const TaskPageClient = () => {
     if (isEmployee) {
       router.push('/dashboard');
     } else {
-      getTasks(selectedAssignee, selectedStatus);
+      getTasks(
+        selectedAssignee,
+        selectedStatus,
+        activeSortField ? (isAscendant ? activeSortField : `-${activeSortField}`) : undefined
+      );
       fetchEmployees();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Add this useEffect to listen to sorting changes
+  useEffect(() => {
+    if (activeSortField) {
+      getTasks(
+        selectedAssignee,
+        selectedStatus,
+        isAscendant ? activeSortField : `-${activeSortField}`
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSortField, isAscendant]);
 
 
   return (
@@ -100,8 +121,13 @@ const TaskPageClient = () => {
               className="border rounded px-2 py-1"
               value={selectedAssignee}
               onChange={e => {
-                setSelectedAssignee(e.target.value);
-                getTasks(e.target.value, selectedStatus);
+                const value = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                setSelectedAssignee(value);
+                getTasks(
+                  value,
+                  selectedStatus,
+                  activeSortField ? (isAscendant ? activeSortField : `-${activeSortField}`) : undefined
+                );
               }}
             >
               <option value="all">All Employees</option>
@@ -117,7 +143,11 @@ const TaskPageClient = () => {
               value={selectedStatus}
               onChange={e => {
                 setSelectedStatus(e.target.value);
-                getTasks(selectedAssignee, e.target.value);
+                getTasks(
+                  selectedAssignee,
+                  e.target.value,
+                  activeSortField ? (isAscendant ? activeSortField : `-${activeSortField}`) : undefined
+                );
               }}
             >
               <option value="all">All Statuses</option>
@@ -160,13 +190,13 @@ const TaskPageClient = () => {
                   className="flex items-center gap-1 w-full"
                   onClick={e => {
                     e.stopPropagation();
-                    handleSort('due_date');
+                    handleSort('date_due');
                   }}
                   style={{ width: '100%' }}
                 >
                   Due Date
-                  <span className={activeSortField === 'due_date' ? 'inline-flex' : 'invisible'}>
-                    {activeSortField === 'due_date' && isAscendant ? (
+                  <span className={activeSortField === 'date_due' ? 'inline-flex' : 'invisible'}>
+                    {activeSortField === 'date_due' && isAscendant ? (
                       <ChevronUp size={16} />
                     ) : (
                       <ChevronDown size={16} />
@@ -179,13 +209,13 @@ const TaskPageClient = () => {
                   className="flex items-center gap-1 w-full"
                   onClick={e => {
                     e.stopPropagation();
-                    handleSort('date_created');
+                    handleSort('date_creation');
                   }}
                   style={{ width: '100%' }}
                 >
                   Date Created
-                  <span className={activeSortField === 'date_created' ? 'inline-flex' : 'invisible'}>
-                    {activeSortField === 'date_created' && isAscendant ? (
+                  <span className={activeSortField === 'date_creation' ? 'inline-flex' : 'invisible'}>
+                    {activeSortField === 'date_creation' && isAscendant ? (
                       <ChevronUp size={16} />
                     ) : (
                       <ChevronDown size={16} />
@@ -220,10 +250,14 @@ const TaskPageClient = () => {
                 {statusMap[task.status] || 'Other'}
                 </TableCell>
                 <TableCell colSpan={3}>
-                {task.date_due ? new Date(task.date_due).toLocaleDateString() : '-'}
+                  {task.date_due
+                    ? new Date(task.date_due).toLocaleDateString('en-GB')
+                    : '-'}
                 </TableCell>
                 <TableCell colSpan={1}>
-                {task.date_creation ? new Date(task.date_creation).toLocaleDateString() : '-'}
+                  {task.date_creation
+                    ? new Date(task.date_creation).toLocaleDateString('en-GB')
+                    : '-'}
                 </TableCell>
               </TableRow>
               ))
