@@ -13,54 +13,10 @@ export interface Task {
   date_due: string;
   created_at: string;
   updated_at: string;
+  assignee_email: string;
 }
 
-const initialTasks: Task[] = [
-  {
-    "id": 10,
-    "title": "Town shake wide such.",
-    "description": "Animal score red market. Professor time everybody stage.",
-    "status": 1,
-    "assignee": 5,
-    "date_creation": "2025-04-29T03:29:53.498718Z",
-    "date_due": "2025-04-29T03:29:53.498719Z",
-    "created_at": "2025-04-29T03:29:53.498787Z",
-    "updated_at": "2025-04-29T03:29:53.498788Z"
-  },
-  {
-    "id": 9,
-    "title": "Agency outside focus.",
-    "description": "Simple letter room newspaper. Short anything TV dream.\nCharacter property enter offer city commercial. Tend account recent.\nThing west land be water class. Four hospital myself money job training.",
-    "status": 1,
-    "assignee": 5,
-    "date_creation": "2025-04-29T03:29:53.497835Z",
-    "date_due": "2025-04-29T03:29:53.497842Z",
-    "created_at": "2025-04-29T03:29:53.497925Z",
-    "updated_at": "2025-04-29T03:29:53.497927Z"
-  },
-  {
-    "id": 6,
-    "title": "Billion within view end.",
-    "description": "Community scene later southern theory he key. Recent might nature including.\nHeavy risk few hot. Success maintain wish box could might. Only ok card or design.",
-    "status": 1,
-    "assignee": 5,
-    "date_creation": "2025-04-29T03:28:13.039713Z",
-    "date_due": "2025-04-29T03:28:13.039714Z",
-    "created_at": "2025-04-29T03:28:13.039784Z",
-    "updated_at": "2025-04-29T03:28:13.039786Z"
-  },
-  {
-    "id": 5,
-    "title": "Dark community piece no positive.",
-    "description": "Act pressure agency claim include. Available herself out mother. Ok also agree attention work finally health.",
-    "status": 1,
-    "assignee": 5,
-    "date_creation": "2025-04-29T03:28:13.035393Z",
-    "date_due": "2025-04-29T03:28:13.035395Z",
-    "created_at": "2025-04-29T03:28:13.035501Z",
-    "updated_at": "2025-04-29T03:28:13.035503Z"
-  }
-];
+const initialTasks: Task[] = [];
 
 type StoreTasks = {
   tasks: Task[];

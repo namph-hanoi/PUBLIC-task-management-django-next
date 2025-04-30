@@ -24,6 +24,7 @@ export const DatePickerPopover: React.FC<DatePickerPopoverProps> = ({
     <label>
       <span className="block text-sm font-medium">{label}</span>
       <button
+        type="button"
         className="border rounded px-2 py-1 w-full text-left bg-white"
         onClick={() => {
           if (!disabled) setOpen(prevState => !prevState);

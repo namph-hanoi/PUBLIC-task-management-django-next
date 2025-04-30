@@ -76,7 +76,7 @@ const TaskPageClient = () => {
               {clampText(task.description || '-', 30)}
               </TableCell>
               <TableCell>
-              {task.assignee?.username || task.assignee?.name || '-'}
+              {task.assignee_email || '-'}
               </TableCell>
               <TableCell colSpan={3}>
               {statusMap[task.status] || 'Other'}
