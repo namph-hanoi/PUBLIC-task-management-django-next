@@ -28,17 +28,30 @@ type StoreTasks = {
 
 const storeTasksImpl = (set: any, get: any): StoreTasks => ({
   tasks: initialTasks,
-  createTask: (task) => {
-    const now = new Date().toISOString();
-    const newId = Math.max(0, ...get().tasks.map((t: Task) => t.id)) + 1;
-    const newTask: Task = {
-      ...task,
-      id: newId,
-      created_at: now,
-      updated_at: now,
-      date_creation: now,
-    };
-    set((state: StoreTasks) => ({ tasks: [newTask, ...state.tasks] }));
+  createTask: async (task) => {
+    try {
+      const now = new Date().toISOString();
+      const payload = {
+        ...task,
+        date_creation: now,
+        date_due: task.date_due || now,
+      };
+      const response = await fetch('/api/task/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create task');
+      }
+      await get().refreshTasks();
+      toast.success('Task created successfully');
+    } catch (error: any) {
+      toast.error('Failed to create task');
+      console.error(error);
+    }
   },
   updateTask: async (id, updates) => {
     try {
@@ -59,13 +72,7 @@ const storeTasksImpl = (set: any, get: any): StoreTasks => ({
       if (!response.ok) {
         throw new Error('Failed to update task');
       }
-      set((state: StoreTasks) => ({
-        tasks: state.tasks.map((task) =>
-          task.id === id
-            ? { ...task, ...filteredUpdates, updated_at: new Date().toISOString() }
-            : task
-        )
-      }));
+      get().refreshTasks();
       toast.success('Task updated successfully');
     } catch (error: any) {
       toast.error('Failed to update task');

@@ -17,7 +17,10 @@ const TaskSchema = z.object({
   status: z.number(),
   date_due: z.string(),
   date_creation: z.string(),
-  assignee: z.union([z.string(), z.number()]),
+  assignee: z.union([
+    z.string().min(1, 'Assignee must not be empty'),
+    z.number()
+  ]),
 });
 
 type TaskFormSchema = z.infer<typeof TaskSchema>;
@@ -93,8 +96,6 @@ export const TaskCreationModal: React.FC<TaskCreationModalProps> = ({ isOpen, on
       setError('date_due', { type: 'manual', message: 'Due date cannot be before today or creation date' });
       return;
     }
-    
-
     addTask({
       ...data,
       status: Number(data.status ?? data.status),
@@ -184,6 +185,7 @@ export const TaskCreationModal: React.FC<TaskCreationModalProps> = ({ isOpen, on
               onChange={e => {
                 setValue('assignee', e.target.value, { shouldDirty: true, shouldValidate: true });
               }}
+              onBlur={e => e.currentTarget.blur()}
             >
               <option value="">Unassigned</option>
               {employees.map((emp: any) => (
@@ -192,6 +194,8 @@ export const TaskCreationModal: React.FC<TaskCreationModalProps> = ({ isOpen, on
                 </option>
               ))}
             </select>
+            {errors.assignee && <span className="text-red-500 text-xs">{errors.assignee.message}</span>}
+
           </label>
         )}
         <button
