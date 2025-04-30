@@ -14,22 +14,14 @@ python manage.py migrate
 echo 'Collecting static files...'
 python manage.py collectstatic --no-input
 
-if [ "$SERVICE" = "backend" ]; then
-    if [ "$ENV" = "development" ]; then
-        python manage.py runserver 0.0.0.0:8000
-    else
-        gunicorn backend.wsgi:application \
-            --bind 0.0.0.0:8000 \
-            --worker-class uvicorn.workers.UvicornWorker \
-            --workers $(nproc) \
-            --log-level=info
-    fi
+if [ "$ENV" = "development" ]; then
+    python manage.py runserver 0.0.0.0:8000
 else
-    if [ "$ENV" = "development" ]; then
-        watchmedo auto-restart --patterns="*.py" --recursive --directory=/code --  celery -A config worker -l info
-    else
-        celery -A config worker -l info
-    fi
+    gunicorn backend.wsgi:application \
+        --bind 0.0.0.0:8000 \
+        --worker-class uvicorn.workers.UvicornWorker \
+        --workers $(nproc) \
+        --log-level=info
 fi
 
 # exec "$@"
