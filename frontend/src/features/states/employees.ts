@@ -22,18 +22,7 @@ type StoreEmployees = {
 
 const storeEmployeesImpl = (set: any, get: any): StoreEmployees => ({
   employees: initialEmployees,
-  createEmployee: (employee) => {
-    const now = new Date().toISOString();
-    const newId = Math.max(0, ...get().employees.map((e: Employee) => e.id)) + 1;
-    const newEmployee: Employee = {
-      ...employee,
-      // id: newId,
-      // date_hired: now,
-      // updated_at: now,
-    };
-    set((state: StoreEmployees) => ({ employees: [newEmployee, ...state.employees] }));
-    toast.success('Employee created successfully');
-  },
+  createEmployee: (employee) => {},
   updateEmployee: async (id, updates) => {
     try {
       const response = await fetch(`/api/employee/${id}/`, {
@@ -61,7 +50,7 @@ const storeEmployeesImpl = (set: any, get: any): StoreEmployees => ({
   },
   deleteEmployee: (id) => {
     set((state: StoreEmployees) => ({
-      employees: state.employees.filter((employee) => employee.id !== id)
+      employees: state.employees.filter((employee) => employee.employee_id !== id)
     }));
     toast.success('Employee deleted successfully');
   },

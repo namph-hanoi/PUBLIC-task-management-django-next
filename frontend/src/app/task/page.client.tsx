@@ -142,10 +142,11 @@ const TaskPageClient = () => {
               className="border rounded px-2 py-1"
               value={selectedStatus}
               onChange={e => {
-                setSelectedStatus(e.target.value);
+                const value = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                setSelectedStatus(value);
                 getTasks(
                   selectedAssignee,
-                  e.target.value,
+                  value,
                   activeSortField ? (isAscendant ? activeSortField : `-${activeSortField}`) : undefined
                 );
               }}
