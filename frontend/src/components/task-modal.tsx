@@ -141,7 +141,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
             className="border rounded px-2 py-1 w-full"
             {...register('status', { valueAsNumber: true })}
             value={String(watch('status'))}
-            onChange={e => setValue('status', Number(e.target.value))}
+            onChange={e => {
+              setValue(
+                'status', Number(e.target.value),
+                { shouldDirty: true, shouldValidate: true }
+              );
+            }}
             onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
           >
             <option value="1">In Progress</option>
