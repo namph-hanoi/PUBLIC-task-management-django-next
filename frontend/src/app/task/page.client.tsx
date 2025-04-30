@@ -15,6 +15,8 @@ import { TaskModal } from '../../components/task-modal';
 import { TaskCreationModal } from '../../components/task-creation-modal';
 import { useGlobalStore } from '@/features/states/global';
 import { useRouter } from 'next/navigation';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
 
 export type NumberOrAll = number | 'all';
 
@@ -28,11 +30,45 @@ const TaskPageClient = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [creationModalOpen, setCreationModalOpen] = useState(false);
 
-  // New state for filters
   const [selectedAssignee, setSelectedAssignee] = useState<number | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<number | 'all'>('all');
 
-  // Modified useEffect to use filters
+  const [activeSortField, setActiveSortField] = useState<string | null>(null);
+  const [isAscendant, setIsAscendant] = useState<boolean>(false);
+
+  const getTasks = (assignee: number | 'all', status: number | 'all') => {
+    const params: { assignee?: NumberOrAll | null; status?: NumberOrAll | null } = {};
+    if (assignee && assignee !== 'all') params.assignee = assignee;
+    if (status && status !== 'all') params.status = Number(status);
+    refreshTasks(params);
+  };
+
+  const handleSort = (field: string) => {
+    if (activeSortField === field) {
+      setIsAscendant(prev => !prev);
+    } else {
+      setActiveSortField(field);
+      setIsAscendant(false);
+    }
+  };
+
+  // TODO: move to an util file
+  function clampText(text: string, maxLength: number) {
+    if (!text) return '-';
+    return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+  }
+  const statusMap: Record<number, string> = {
+    1: 'In progress',
+    2: 'Completed',
+    3: 'Pending',
+  };
+
+  const handleRowClick = (task: { id: number }) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+  };
+
+
   useEffect(() => {
     const isEmployee = user?.user_role === 'employee';
     if (isEmployee) {
@@ -44,29 +80,6 @@ const TaskPageClient = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // getTasks function
-  const getTasks = (assignee: number | 'all', status: number | 'all') => {
-    const params: { assignee?: NumberOrAll | null; status?: NumberOrAll | null } = {};
-    if (assignee && assignee !== 'all') params.assignee = assignee;
-    if (status && status !== 'all') params.status = Number(status);
-    refreshTasks(params);
-  };
-
-  function clampText(text: string, maxLength: number) {
-    if (!text) return '-';
-    return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
-  }
-
-  const handleRowClick = (task: { id: number }) => {
-    setSelectedTask(task);
-    setModalOpen(true);
-  };
-
-  const statusMap: Record<number, string> = {
-    1: 'In progress',
-    2: 'Completed',
-    3: 'Pending',
-  };
 
   return (
     <div className="w-full">
@@ -123,9 +136,63 @@ const TaskPageClient = () => {
               <TableHead colSpan={2}>Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Assignee</TableHead>
-              <TableHead colSpan={3}>Status</TableHead>
-              <TableHead colSpan={3}>Due Date</TableHead>
-              <TableHead colSpan={1}>Date Created</TableHead>
+              <TableHead colSpan={3}>
+                <button
+                  className="flex items-center gap-1 w-full"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleSort('status');
+                  }}
+                  style={{ width: '100%' }}
+                >
+                  Status
+                  <span className={activeSortField === 'status' ? 'inline-flex' : 'invisible'}>
+                    {activeSortField === 'status' && isAscendant ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </span>
+                </button>
+              </TableHead>
+              <TableHead colSpan={3}>
+                <button
+                  className="flex items-center gap-1 w-full"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleSort('due_date');
+                  }}
+                  style={{ width: '100%' }}
+                >
+                  Due Date
+                  <span className={activeSortField === 'due_date' ? 'inline-flex' : 'invisible'}>
+                    {activeSortField === 'due_date' && isAscendant ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </span>
+                </button>
+              </TableHead>
+              <TableHead colSpan={1}>
+                <button
+                  className="flex items-center gap-1 w-full"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleSort('date_created');
+                  }}
+                  style={{ width: '100%' }}
+                >
+                  Date Created
+                  <span className={activeSortField === 'date_created' ? 'inline-flex' : 'invisible'}>
+                    {activeSortField === 'date_created' && isAscendant ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </span>
+                </button>
+              </TableHead>
             </TableRow>
             </TableHeader>
             <TableBody>
