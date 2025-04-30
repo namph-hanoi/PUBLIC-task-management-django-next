@@ -44,21 +44,25 @@ export default function UserAuthForm() {
 
   const onSubmit = async (data: UserFormValue) => {
     startTransition(async () => {
-      const response = await signIn(data);
-      const responseData = await response.json();
-      if (!response.ok) {
-        toast.error(responseData.detail || 'Sign in failed');
-        return;
+      try {
+        const response = await signIn(data);
+        const responseData = await response.json();
+        if (!response.ok) {
+          toast.error(responseData.detail || 'Sign in failed');
+          return;
+        }
+        setUser({
+          username: responseData.user.username,
+          email: responseData.user.email,
+          first_name: responseData.user.first_name,
+          last_name: responseData.user.last_name,
+          user_role: responseData.user_role,
+        });
+        toast.success(responseData.detail || 'Signed in successfully');
+        router.push('/dashboard');
+      } catch (error) {
+        toast.error('An unexpected error occurred. Please try again.');
       }
-      setUser({
-        username: responseData.user.username,
-        email: responseData.user.email,
-        first_name: responseData.user.first_name,
-        last_name: responseData.user.last_name,
-        user_role: responseData.user_role,
-      });
-      toast.success(responseData.detail || 'Signed in successfully');
-      router.push('/dashboard');
     });
   };
 
