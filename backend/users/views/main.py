@@ -155,6 +155,7 @@ class EmployeeSummaryView(APIView):
         )
         data = [
             {
+                'employee_id': employee.id,
                 'employee_email': employee.email,
                 'no_task_total': employee.no_task_total,
                 'no_task_completed': employee.no_task_completed,
