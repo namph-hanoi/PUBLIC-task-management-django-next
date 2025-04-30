@@ -4,13 +4,20 @@ from .models import Task
 from users.models import Profile
 
 class TaskSerializer(serializers.ModelSerializer):
+    assignee_email = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Task
         fields = [
             'id', 'title', 'description', 'status', 'assignee',
+            'assignee_email',
             'date_creation', 'date_due', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'date_creation']
+
+    def get_assignee_email(self, obj):
+        # Return the assignee's email
+        return getattr(obj.assignee, 'email', str(obj.assignee))
 
     def validate(self, data):
         if self.instance is None:  # create
