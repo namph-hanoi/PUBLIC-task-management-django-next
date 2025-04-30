@@ -12,6 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { TaskModal } from '../../components/task-modal';
+import { TaskCreationModal } from '../../components/task-creation-modal';
 import { useGlobalStore } from '@/features/states/global';
 import { useRouter } from 'next/navigation';
 
@@ -23,6 +24,7 @@ const TaskPageClient = () => {
 
   const [selectedTask, setSelectedTask] = useState<null | { id: number }>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [creationModalOpen, setCreationModalOpen] = useState(false);
 
   useEffect(() => {
       const isEmployee = user?.user_role === 'employee';
@@ -53,64 +55,78 @@ const TaskPageClient = () => {
   return (
     <div className="w-full">
       <div className='flex flex-1 flex-col space-y-4 w-full'>
-      <h2 className='text-2xl font-bold tracking-tight'>Task Management</h2>
-      <p>Welcome to the Task Management page. Here you can manage your tasks effectively.</p>
-      <div className='overflow-x-auto w-full'>
-        <h3 className='text-lg font-semibold mb-2'>All Tasks</h3>
-        <div className="w-full">
-        <Table>
-          <TableHeader>
-          <TableRow>
-            <TableHead colSpan={2}>Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Assignee</TableHead>
-            <TableHead colSpan={3}>Status</TableHead>
-            <TableHead colSpan={3}>Due Date</TableHead>
-            <TableHead colSpan={1}>Date Created</TableHead>
-          </TableRow>
-          </TableHeader>
-          <TableBody>
-          {tasks.length === 0 ? (
+        <h2 className='text-2xl font-bold tracking-tight'>Task Management</h2>
+        <p>Welcome to the Task Management page. Here you can manage your tasks effectively.</p>
+        {/* Add button to open task creation modal */}
+        <div className="mb-4">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => setCreationModalOpen(true)}
+          >
+            + Create Task
+          </button>
+        </div>
+        <div className='overflow-x-auto w-full'>
+          <h3 className='text-lg font-semibold mb-2'>All Tasks</h3>
+          <div className="w-full">
+          <Table>
+            <TableHeader>
             <TableRow>
-            <TableCell colSpan={7} className='text-center'>
-              No tasks available.
-            </TableCell>
+              <TableHead colSpan={2}>Title</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Assignee</TableHead>
+              <TableHead colSpan={3}>Status</TableHead>
+              <TableHead colSpan={3}>Due Date</TableHead>
+              <TableHead colSpan={1}>Date Created</TableHead>
             </TableRow>
-          ) : (
-            tasks.map((task) => (
-            <TableRow
-              key={task.id}
-              className="cursor-pointer hover:bg-muted"
-              onClick={() => handleRowClick(task)}
-            >
-              <TableCell colSpan={2}>{clampText(task.title || '-', 30)}</TableCell>
-              <TableCell title={task.description || '-'}>
-              {clampText(task.description || '-', 30)}
+            </TableHeader>
+            <TableBody>
+            {tasks.length === 0 ? (
+              <TableRow>
+              <TableCell colSpan={7} className='text-center'>
+                No tasks available.
               </TableCell>
-              <TableCell>
-              {task.assignee_email || '-'}
-              </TableCell>
-              <TableCell colSpan={3}>
-              {statusMap[task.status] || 'Other'}
-              </TableCell>
-              <TableCell colSpan={3}>
-              {task.date_due ? new Date(task.date_due).toLocaleDateString() : '-'}
-              </TableCell>
-              <TableCell colSpan={1}>
-              {task.date_creation ? new Date(task.date_creation).toLocaleDateString() : '-'}
-              </TableCell>
-            </TableRow>
-            ))
-          )}
-          </TableBody>
-        </Table>
+              </TableRow>
+            ) : (
+              tasks.map((task) => (
+              <TableRow
+                key={task.id}
+                className="cursor-pointer hover:bg-muted"
+                onClick={() => handleRowClick(task)}
+              >
+                <TableCell colSpan={2}>{clampText(task.title || '-', 30)}</TableCell>
+                <TableCell title={task.description || '-'}>
+                {clampText(task.description || '-', 30)}
+                </TableCell>
+                <TableCell>
+                {task.assignee_email || '-'}
+                </TableCell>
+                <TableCell colSpan={3}>
+                {statusMap[task.status] || 'Other'}
+                </TableCell>
+                <TableCell colSpan={3}>
+                {task.date_due ? new Date(task.date_due).toLocaleDateString() : '-'}
+                </TableCell>
+                <TableCell colSpan={1}>
+                {task.date_creation ? new Date(task.date_creation).toLocaleDateString() : '-'}
+                </TableCell>
+              </TableRow>
+              ))
+            )}
+            </TableBody>
+          </Table>
+          </div>
         </div>
       </div>
-      </div>
       <TaskModal
-      taskId={selectedTask?.id ?? null}
-      isOpen={modalOpen}
-      onClose={() => { setModalOpen(false); setSelectedTask(null); }}
+        taskId={selectedTask?.id ?? null}
+        isOpen={modalOpen}
+        onClose={() => { setModalOpen(false); setSelectedTask(null); }}
+      />
+      {/* Task Creation Modal */}
+      <TaskCreationModal
+        isOpen={creationModalOpen}
+        onClose={() => setCreationModalOpen(false)}
       />
     </div>
   );

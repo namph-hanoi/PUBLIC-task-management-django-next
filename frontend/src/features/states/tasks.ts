@@ -13,7 +13,7 @@ export interface Task {
   date_due: string;
   created_at: string;
   updated_at: string;
-  assignee_email: string;
+  assignee_email?: string;
 }
 
 const initialTasks: Task[] = [];

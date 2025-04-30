@@ -2,12 +2,12 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Modal } from '@/components/ui/modal';
-import { Task, useStoreTasks } from '@/features/states/tasks';
+import { useStoreTasks } from '@/features/states/tasks';
 import 'react-day-picker/dist/style.css';
 import { DatePickerPopover } from '@/components/ui/date-picker-popover';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGlobalStore } from '@/features/states/global'
+import { useGlobalStore } from '@/features/states/global';
 import { useStoreEmployees } from '@/features/states/employees';
 import { validateDirtyFields } from '@/lib/validate-dirty-fields';
 
@@ -22,89 +22,91 @@ const TaskSchema = z.object({
 
 type TaskFormSchema = z.infer<typeof TaskSchema>;
 
-interface TaskModalProps {
-  taskId: number | null;
+interface TaskCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose }) => {
-  const { tasks, updateTask } = useStoreTasks();
-  const { employees } = useStoreEmployees(); // Get employees from store
-  const task = tasks.find(t => t.id === taskId) || null;
-
-  // Get current user from global store
+export const TaskCreationModal: React.FC<TaskCreationModalProps> = ({ isOpen, onClose }) => {
+  const addTask = useStoreTasks(state => state.createTask);
+  const { employees } = useStoreEmployees();
   const user = useGlobalStore(state => state.user);
   const isEmployee = user?.user_role === 'employee';
 
-  const { register, handleSubmit, reset, setValue, watch, setError, formState: { errors, dirtyFields } } = useForm<TaskFormSchema>({
+  const todayISO = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    setError,
+    formState: { errors, dirtyFields }
+  } = useForm<TaskFormSchema>({
     resolver: zodResolver(TaskSchema),
     defaultValues: {
-      title: task?.title || '',
-      description: task?.description || '',
-      status: task?.status ?? 1,
-      date_due: task?.date_due,
-      date_creation: task?.date_creation,
-      assignee: task?.assignee ?? '', // Set default assignee if available
+      title: '',
+      description: '',
+      status: 1,
+      date_due: todayISO,
+      date_creation: todayISO,
+      assignee: '',
     },
   });
+
   useEffect(() => {
-    reset({
-      title: task?.title || '',
-      description: task?.description || '',
-      status: task?.status ?? 1,
-      date_due: task?.date_due,
-      date_creation: task?.date_creation,
-      assignee: task?.assignee ?? '',
-    });
-  }, [task, isOpen, reset]);
+    if (isOpen) {
+      reset({
+        title: '',
+        description: '',
+        status: 1,
+        date_due: todayISO,
+        date_creation: todayISO,
+        assignee: '',
+      });
+    }
+  }, [isOpen, reset]);
 
   const date_due = watch('date_due');
   const date_creation = watch('date_creation');
 
   const onSubmit = (data: TaskFormSchema) => {
-    const updatedFields = validateDirtyFields(TaskSchema, data, dirtyFields);
-    if (!updatedFields.success) {
-      return;
-    }
+    
+    // const dirtyResult = validateDirtyFields(TaskSchema, data, dirtyFields);
+    // if (!dirtyResult.success) {
+    //   return;
+    // }
+    // const dirtyData = dirtyResult.data as TaskFormSchema;
 
-    const errors: Record<string, string> = {};
-    const due = new Date(data.date_due);
+    const due = new Date(data.date_due ?? data.date_due);
     due.setHours(0, 0, 0, 0);
-    const creation = new Date(data.date_creation);
+    const creation = new Date(data.date_creation ?? data.date_creation);
+    creation.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (dirtyFields.date_due || dirtyFields.date_creation) {
-      if (due < today) {
-        errors.date_due = 'Due date cannot be before today';
-      }
-      if (due < creation) {
-        errors.date_due = 'Due date cannot be before creation date';
-      }
-    }
-
-    if (Object.keys(errors).length > 0) {
-      if (errors.date_due) {
-        setError('date_due', { type: 'manual', message: errors.date_due });
-      }
+    if (
+      (data.date_due && due < today) ||
+      (data.date_due && data.date_creation && due < creation)
+    ) {
+      setError('date_due', { type: 'manual', message: 'Due date cannot be before today or creation date' });
       return;
     }
+    
 
-    if (task) {
-      updateTask(task.id, {
-        ...updatedFields.data
-      });
-      onClose();
-    }
+    addTask({
+      ...data,
+      status: Number(data.status ?? data.status),
+      assignee: Number(data.assignee),
+    });
+    onClose();
   };
-
-  if (!task) return null;
 
   return (
     <Modal
-      title={`Task #${task.id}`}
-      description={`Edit details for "${task.title}"`}
+      title="Create New Task"
+      description="Fill in the details to create a new task"
       isOpen={isOpen}
       onClose={onClose}
     >
@@ -138,7 +140,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
                 { shouldDirty: true, shouldValidate: true }
               );
             }}
-            onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
+            onBlur={e => e.currentTarget.blur()}
           >
             <option value="1">In Progress</option>
             <option value="2">Completed</option>
@@ -171,34 +173,34 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, isOpen, onClose })
           }
           disabled={isEmployee}
         />
-          {!isEmployee && (
-            <label>
-              <span className="block text-sm font-medium">Assignee</span>
-              <select
-                className="border rounded px-2 py-1 w-full"
-                {...register('assignee')}
-                disabled={isEmployee}
-                value={watch('assignee') ?? ''}
-                onChange={e => {
-                  setValue('assignee', e.target.value, { shouldDirty: true, shouldValidate: true });
-                }}
-              >
-                {/* <option value="">Unassigned</option> */}
-                {employees.map((emp: any) => (
-                  <option key={emp.employee_id ?? emp.id} value={emp.employee_id ?? emp.id}>
-                    {emp.employee_email}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <button
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-              type="submit"
-              onBlur={e => e.currentTarget.blur()} // Ensures select loses focus after change
+        {!isEmployee && (
+          <label>
+            <span className="block text-sm font-medium">Assignee</span>
+            <select
+              className="border rounded px-2 py-1 w-full"
+              {...register('assignee')}
+              disabled={isEmployee}
+              value={watch('assignee') ?? ''}
+              onChange={e => {
+                setValue('assignee', e.target.value, { shouldDirty: true, shouldValidate: true });
+              }}
             >
-            Save
-          </button>
+              <option value="">Unassigned</option>
+              {employees.map((emp: any) => (
+                <option key={emp.employee_id ?? emp.id} value={emp.employee_id ?? emp.id}>
+                  {emp.employee_email}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          type="submit"
+          onBlur={e => e.currentTarget.blur()}
+        >
+          Create
+        </button>
       </form>
     </Modal>
   );
