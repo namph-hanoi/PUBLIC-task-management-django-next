@@ -36,18 +36,28 @@ class SeedAllView(APIView):
         employee_b.set_password('password')
         employee_b.save()
         Profile.objects.get_or_create(user=employee_b, defaults={'role': Profile.EMPLOYEE})
+        
+        employee_c, _ = User.objects.get_or_create(
+            email='employee_c@localhost.com',
+            defaults={'username': 'employee_c@localhost.com'}
+        )
+        employee_c.set_password('password')
+        employee_c.save()
+        Profile.objects.get_or_create(user=employee_c, defaults={'role': Profile.EMPLOYEE})
 
         # Create 2 random tasks for each employee
-        for assignee in [employee_a, employee_b]:
-            for _ in range(2):
+        for assignee in [employee_a, employee_b, employee_c]:
+            for _ in range(6):
                 date_creation = fake.date_this_year(before_today=False, after_today=False)
                 date_due = fake.date_between(start_date=date_creation, end_date="+10d")
+                status_choices = [choice[0] for choice in Task.STATUS_CHOICES]
                 Task.objects.create(
                     title=fake.sentence(),
                     description=fake.text(),
                     assignee=assignee,
                     date_creation=date_creation,
-                    date_due=date_due
+                    date_due=date_due,
+                    status=fake.random_element(elements=status_choices)
                 )
 
         return Response({'status': 'seeded'}, status=status.HTTP_201_CREATED)
