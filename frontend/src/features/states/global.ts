@@ -15,13 +15,28 @@ interface GlobalState {
   user: User | null
   setUser: (user: User) => void
   removeUser: () => void
+  seedUserEmails: string[]
+  seedSuccess: boolean
+  setSeedSuccess: (success: boolean) => void
+  seededAccountToSignIn: string | null
+  setSeededAccountToSignIn: (email: string | null) => void
 }
-
 
 const storeGlobalImpl = (set: any): GlobalState => ({
   user: null,
   setUser: (user) => set({ user }),
-  removeUser: () => set({ user: null })
+  removeUser: () => set({ user: null }),
+  // state for seeds
+  seedUserEmails: [
+    "employer@localhost.com",
+    "employee_a@localhost.com",
+    "employee_b@localhost.com",
+    "employee_c@localhost.com"
+  ],
+  seedSuccess: false,
+  setSeedSuccess: (success) => set({ seedSuccess: success }),
+  seededAccountToSignIn: null,
+  setSeededAccountToSignIn: (email) => set({ seededAccountToSignIn: email })
 })
 
 type UseGlobalStoreType = UseBoundStore<StoreApi<GlobalState>>;

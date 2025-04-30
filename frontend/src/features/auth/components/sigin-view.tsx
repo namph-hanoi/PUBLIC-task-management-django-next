@@ -5,7 +5,7 @@ import { IconStar } from '@tabler/icons-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import UserAuthForm from './user-auth-form';
-import { BtnSeed } from './btn-seed';
+import {SigninViewClient} from './sigin-view.client';
 
 export const metadata: Metadata = {
   title: 'Authentication',
@@ -26,7 +26,7 @@ export default function SignInViewPage() {
       </Link>
       <div className='bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r'>
         <div className='absolute inset-0 bg-zinc-900' />
-        <BtnSeed />
+        <SigninViewClient />
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
             <p className='text-lg'>
@@ -50,36 +50,18 @@ export default function SignInViewPage() {
           >
             <div className='flex items-center'>
               <GitHubLogoIcon className='size-4' />
-              <span className='ml-1 inline'>Go to the Github</span>{' '}
+              <span className='ml-1 inline'>Go to my Github</span>{' '}
             </div>
           </Link>
           <div className='flex flex-col space-y-2 text-center'>
             <h1 className='text-2xl font-semibold tracking-tight'>
-              Create an account
+              Login 
             </h1>
             <p className='text-muted-foreground text-sm'>
-              Enter your email below to create your account
+              Make sure you click seeding button  <br/> or seed via Postman or curl command in the README
             </p>
           </div>
           <UserAuthForm />
-          <p className='text-muted-foreground px-8 text-center text-sm'>
-            By clicking continue, you agree to our{' '}
-            <Link
-              href='/terms'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link
-              href='/privacy'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
-          <BtnSeed />
         </div>
       </div>
     </div>

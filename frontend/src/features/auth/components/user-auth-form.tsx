@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import GithubSignInButton from './github-auth-button';
@@ -33,14 +33,21 @@ export default function UserAuthForm() {
   const [loading, startTransition] = useTransition();
   const router = useRouter();
   const setUser = useGlobalStore((state) => state.setUser);
+  const seededAccountToSignIn = useGlobalStore((state) => state.seededAccountToSignIn);
   const defaultValues = {
     email: 'employee_a@localhost.com',
-    password: '',
+    password: 'password',
   };
   const form = useForm<UserFormValue>({
     resolver: zodResolver(formSchema),
     defaultValues
   });
+
+  useEffect(() => {
+    if (seededAccountToSignIn) {
+      form.setValue('email', seededAccountToSignIn);
+    }
+  }, [seededAccountToSignIn, form]);
 
   const onSubmit = async (data: UserFormValue) => {
     startTransition(async () => {
@@ -115,21 +122,10 @@ export default function UserAuthForm() {
             className='mt-2 ml-auto w-full'
             type='submit'
           >
-            Continue With Email
+            Sign In
           </Button>
         </form>
       </Form>
-      <div className='relative'>
-        <div className='absolute inset-0 flex items-center'>
-          <span className='w-full border-t' />
-        </div>
-        <div className='relative flex justify-center text-xs uppercase'>
-          <span className='bg-background text-muted-foreground px-2'>
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <GithubSignInButton />
     </>
   );
 }
